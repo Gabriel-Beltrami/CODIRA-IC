@@ -1,0 +1,22 @@
+FC=gfortran
+FFLAGS=-O3
+RANS_BUILD_HOME = /Users/jan/PhD/Codes/RANS #/RANS_BUILD_HOME
+LIBS=
+
+.SUFFIXES:
+.SUFFIXES: .f90 .o
+
+all: $(RANS_BUILD_HOME)/RANS 
+
+$(RANS_BUILD_HOME)/%.o: %.f90
+	$(FC) -c $(FFLAGS) -J $(RANS_BUILD_HOME) -o $@  $<
+include .depend
+
+clean:
+	(cd $(RANS_BUILD_HOME); rm -f RANS *.o *.mod core)
+
+depend .depend:
+	makedepend -o $(RANS_BUILD_HOME) *.f90 > .depend
+
+#makedepf90 -o $(RANS_BUILD_HOME)/RANS -b $(RANS_BUILD_HOME) *.f90 > .depend
+# DO NOT DELETE
