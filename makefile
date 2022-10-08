@@ -37,5 +37,5 @@ visual.o: visual.f90 user.mod
 main.o: user.mod main.f90 grids.mod cfdlib.mod visual.mod rans_models.mod
 	gfortran -c main.f90
 clean:
-	rm user.mod user.o main.o grids.o exe1 ex1_.dat grids.mod visual.o visual.mod cfdlib.o cfdlib.mod
+	rm *.o *.mod exe1  #user.mod user.o main.o grids.o exe1 ex1_.dat grids.mod visual.o visual.mod cfdlib.o cfdlib.mod
 # End of the makefile
