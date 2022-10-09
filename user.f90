@@ -8,8 +8,8 @@ module user
 !-----------------------------------------------------------------------------------------------!
 !					GRID AND DOMAIN SIZE					!
 !-----------------------------------------------------------------------------------------------!
-		Nx=101,				& ! Nodes in the x-direction
-		Ny=101,				& ! Nodes in the y-directionc
+		Nx=81,				& ! Nodes in the x-direction
+		Ny=81,				& ! Nodes in the y-directionc
 		!Ny=69 to have Ly=12h and Ny 91 to have Ly=18h
 
 		ALGORITMO=2	!**    (ALGORITMO = SIMPLE (1), SIMPLEC (2))
@@ -17,8 +17,8 @@ module user
 	real(KIND = DP)  ::			&
 
 		Hx,Hy,					& ! Domain size
-		Factorx=1.0D-30,		& ! x-Screcth grid factor
-		Factory=1.0D-30,		& ! y-Screcth grid factor
+		Factorx=1.0D0,		& ! x-Screcth grid factor
+		Factory=1.0D0,		& ! y-Screcth grid factor
 !-----------------------------------------------------------------------------------------------!
 !					NUMERICAL PARAMETERS					!
 !-----------------------------------------------------------------------------------------------!
@@ -32,7 +32,7 @@ module user
 		relaxU=0.8D+00,			& ! Relax factor for U
 		relaxV=0.8D+00,			& ! Relax factor for V
 		relaxP=1.0D+00,			& ! Relax factor for P
-		relaxT=0.8D+00,			& ! Relax factor for T
+		relaxT=0.7D+00,			& ! Relax factor for T
 		relaxTK=0.8D+00,		& ! Relax factor for TK
 		relaxe=0.8D+00,			& ! Relax factor for e
 
@@ -60,6 +60,8 @@ module user
 		R=287.0D+00,			  & ! Gas Constant for Air
 		Po=101325.0D+00,		  & ! Initial Pressure			
 
+		
+		T_coflow= 800d0, &
 		CONTERo,							& ! Thermal conductivity
 		MUo,ratio_mu,ratio_conter,			& ! Viscoity
 		RHOo,								& ! Density
@@ -73,14 +75,20 @@ module user
 		Boussinesq=1,	  	&	! If Boussinesq=1 applies Bouss. Approx.. If Boussinesq=2 DO NOT APPLY Bouss. Appr. and density is variable
 		CttProperties=1,	&  	! If CttProperties=1 properties are constant. if CttProperties=2 mu and conter are tmeprature dependent by Sutherland's law	
 		ite_coupling=0
+
+
+
+ 		logical :: street_canyon =.TRUE., outside_canyon
+
+	        real(KIND = DP)  :: U_bg = 1.0D+00	
 !-----------------------------------------------------------------------------------------------!
 !					SOLVER OPTIONS						!
 !-----------------------------------------------------------------------------------------------!
 	
 	integer::					&
-!		itermax_t=5000,			& ! Maximum number of iterations
+!		itermax_t=15000,			& ! Maximum number of iterations
 
-		itermax=15000,			& ! Maximum number of iterations
+		itermax=20000,			& ! Maximum number of iterations
 		iter,iter_t,i,j,		&
 
 		npas_P=10,			& ! Time to apply the P-solver subroutine per iteration 
@@ -88,7 +96,7 @@ module user
 		npas_V=1,			& ! Time to apply the V-solver subroutine per iteration
 		npas_T=1,			& ! Time to apply the T-solver subroutine per iteration 
 
-		n=2,				& ! Interpolation scheme: 1:Central, 2:Upwind, 3:Hybrid, 4:Power law, 5:Exponential
+		n=3,				& ! Interpolation scheme: 1:Central, 2:Upwind, 3:Hybrid, 4:Power law, 5:Exponential
 
 
 		n_high_order_scheme = 0 	! No HOS: 		n_high_order_scheme = 0	

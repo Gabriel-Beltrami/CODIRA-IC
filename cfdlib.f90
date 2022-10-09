@@ -40,7 +40,7 @@ subroutine dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo)
 	end if
 !write(*,*) "Hx",Hx,"RHOo",RHOo,"Cpo",Cpo,"contero",contero,"Muo",Muo
 !stop
-	Hy=Hx
+	Hy=0.75*Hx
 !	dt=dt_adim*Hx*Hx*RHOo*Cpo/(CONTERo)
 !	write(*,*) dt
 !	stop
@@ -278,7 +278,7 @@ subroutine start (U,V,P,T,Tref,rho,Fep,Fnp,TK,e)
 		Do i=1,(Nx-1)
 
 !			U(i,j)=x(i)*y(j)*20.0D+0
-			U(i,j)=1.0D+00
+			U(i,j)=0.0D+00
 		end do
 	end do
 
@@ -577,11 +577,15 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 
 	apo(i,j)=(RHO(i,j)*DXP(i)*DYP(j))/dt
 	
-    ap(i,j)=ae(i,j)+aw(i,j)+an(i,j)+as(i,j)+apo(i,j) - sp
+        ap(i,j)=ae(i,j)+aw(i,j)+an(i,j)+as(i,j)+apo(i,j) - sp
 
-    b(i,j)=apo(i,j)*T(i,j) + sc + P_rad(i,j)*DXP(i)*DYP(j)/cp(i,j)
+        b(i,j)=apo(i,j)*T(i,j) + sc + P_rad(i,j)*DXP(i)*DYP(j)/cp(i,j)
 
-		end do
+	if ( (i.gt.Nx/2).and.(i.le.(Nx/2)+1).and.(j==3)) then
+		b(i,j)=b(i,j)+1.0D+01
+	end if
+
+	end do
 	end do 
 
 
@@ -596,7 +600,7 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 		ae(i,1)=0.0D+00
 		aw(i,1)=0.0D+00
 		ap(i,1)=1.0D+00
-		an(i,1)=0.0D+00
+		an(i,1)=1.0D+00
 		as(i,1)=0.0D+00
 		b(i,1) =0.0D+00
 	end do
@@ -608,12 +612,12 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 		ap(i,Ny)=1.0D+00
 		an(i,Ny)=0.0D+00
 		as(i,Ny)=0.0D+00!0.0D+00
-		b(i,Ny) =0.0D+00! T_coflow
+		b(i,Ny) =3.0D+02 !T_coflow
 	end do
  
 !					WEST					!
 	Do j=1,Ny
-		ae(1,j)=0.0D+00
+		ae(1,j)=1.0D+00
 		aw(1,j)=0.0D+00
 		ap(1,j)=1.0D+00
 		an(1,j)=0.0D+00
@@ -627,7 +631,7 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 !					EAST					!
 	Do j=2,Ny-1
 		ae(Nx,j)=0.0D+00
-		aw(Nx,j)=0.0D+00
+		aw(Nx,j)=1.0D+00
 		ap(Nx,j)=1.0D+00
 		an(Nx,j)=0.0D+00
 		as(Nx,j)=0.0D+00
@@ -1442,8 +1446,8 @@ Subroutine coef_U(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 		aw(i,Ny)	=	0.0D+00
 		apu(i,Ny)	=	1.0D+00
 		an(i,Ny)	=	0.0D+00
-		as(i,Ny)	=	0.0D+00!0.0D+00
-		b(i,Ny)		=	1.0D+00!u_coflow
+		as(i,Ny)	=	1.0D+00!0.0D+00
+		b(i,Ny)		=	0.0D+00!u_coflow
 	end do
 	
 
@@ -1457,16 +1461,36 @@ Subroutine coef_U(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 		b(1,j)		= 	0.0D+00
 	end do
 
+	!if (street_canyon) then
+	if (.TRUE.) then
+
+	!				WEST					!
+		Do j=2,Ny-1
+			outside_canyon = Y(j).gt.(0.5*Hy)
+			if (outside_canyon) then
+			ae(1,j)		=	0.0D+00
+			aw(1,j)		=	0.0D+00
+			apu(1,j)	=	1.0D+00
+			an(1,j)		=	0.0D+00
+			as(1,j)		=	0.0D+00
+			b(1,j)		=       U_bg*(1 -  ( (Hy - Y(j))/ (0.5*Hy)	)**2)
+			end if  	
+		end do
+
+
+	end if
+
 
 !					EAST					!
 	Do j=2,Ny-1
 		ae(Nx-1,j)	=	0.0D+00
-		aw(Nx-1,j)	=	0.0D+0!1.0D+00
+		aw(Nx-1,j)	=	1.0D+00
 		apu(Nx-1,j)	=	1.0D+00
 		an(Nx-1,j)	=	0.0D+00
 		as(Nx-1,j)	=	0.0D+00
 		b (Nx-1,j)	=	0.0D+00
 	END DO
+
 
 
 
@@ -1775,16 +1799,7 @@ Subroutine COEF_V(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 
   	end do
 
-		
-	Do  i=1,Nx
-			ae(i,Ny-1)	=	0.0D+00
-			aw(i,Ny-1)	=	0.0D+00
-			apv(i,Ny-1)	=	1.0D+00
-			an(i,Ny-1)	=	0.0D+00
-			as(i,Ny-1)	=	0.0D+00   
-			b(i,Ny-1)	=	0.0D+00		
-	end do
-
+	
 !					WEST					!
 	Do j=2,Ny-2
       
@@ -1809,9 +1824,6 @@ Subroutine COEF_V(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 		b(Nx,j)		=	0.0D+00
   
 	end do
-
-
-
 
 !-----------------------------------------------------------------------------------------------!
 !!			d's Matrix determination for SIMPLE algorithm				!
@@ -2229,7 +2241,6 @@ Subroutine PROPERTIES(Mu,CONTER,CP,CONTERo,T,Muo,CPo,RHO,Po,Pmed,Hx,Hy,DXP,DYP,T
 	integer :: i,j,k
 
 
-
 !-----------------------------------------------------------------------------------------------!
 !						Viscocity					!
 !-----------------------------------------------------------------------------------------------! 
@@ -2251,9 +2262,15 @@ Subroutine PROPERTIES(Mu,CONTER,CP,CONTERo,T,Muo,CPo,RHO,Po,Pmed,Hx,Hy,DXP,DYP,T
 
 				Mu(i,j)= 1.68D-5*( (Tp/273.0D+0)**(3.0D+0/2.0D+0) )*( 383.5D+0/(Tp+110.5) ) !SUTHERLAND's Law	
 			end if
+
+			if (street_canyon) then
+				outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.5*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+				if (outside_canyon) Mu(i,j)=1.0D+5
+			end if
+
+
 		end do
 	end do
-
 
 !-----------------------------------------------------------------------------------------------!
 !				Turbulent Viscocity (MuT)					!

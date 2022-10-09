@@ -1,4 +1,4 @@
-!    Copyright (C) <year>  <name of author>
+!    Copyright (C) 2022 Jan Mateu Armengol 
 !
 !    This program is free software: you can redistribute it and/or modify
 !    it under the terms of the GNU General Public License as published by
@@ -86,11 +86,11 @@ program CONDIRA
 
 	!--------------------------------------- Compute scalars  -----------------------------------------------------!
 		   ! Compute T 	
-!	      	call COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,							&
-!			CONTER,Cp,RHO,U,V,T,ap,ae,aw,as,an,b,Res_T,Rmax_T,dt,Fep,Fnp,MUt)
+	      	call COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,							&
+			CONTER,Cp,RHO,U,V,T,ap,ae,aw,as,an,b,Res_T,Rmax_T,dt,Fep,Fnp,MUt)
 
 !	      	call LBL_ADI(1,1,Nx,Ny,ap,AE,AW,AN,AS,B,T,npas_T,RELAXT)
-!	      	call LBL_x(1,1,Nx,Ny,ap,AE,AW,AN,AS,B,T,npas_T,RELAXT)
+	      	call LBL_x(1,1,Nx,Ny,ap,AE,AW,AN,AS,B,T,npas_T,RELAXT)
 
 		if (rans_model .ne. 0) then
 
