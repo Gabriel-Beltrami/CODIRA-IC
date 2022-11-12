@@ -40,7 +40,7 @@ subroutine dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo)
 	end if
 !write(*,*) "Hx",Hx,"RHOo",RHOo,"Cpo",Cpo,"contero",contero,"Muo",Muo
 !stop
-	Hy=0.75*Hx
+	Hy=0.75*Hx !aspect ratio
 !	dt=dt_adim*Hx*Hx*RHOo*Cpo/(CONTERo)
 !	write(*,*) dt
 !	stop
