@@ -63,7 +63,7 @@ module user
 		Po=101325.0D+00,		  & ! Initial Pressure			
 
 		
-		T_coflow= 800d0, C_coflow= 800d0, &
+		C_coflow= 800d0, &
 		CONTERo,							& ! Thermal conductivity
 		MUo,ratio_mu,ratio_conter,			& ! Viscoity
 		RHOo,								& ! Density

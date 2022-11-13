@@ -96,7 +96,7 @@ program CONDIRA
 	      	call COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,							&
 			CONTER,Cp,RHO,U,V,C,ap,ae,aw,as,an,b,Res_C,Rmax_C,dt,Fep,Fnp,MUt)
 
-!	      	call LBL_ADI(1,1,Nx,Ny,ap,AE,AW,AN,AS,B,T,npas_T,RELAXT)
+!	      	call LBL_ADI(1,1,Nx,Ny,ap,AE,AW,AN,AS,B,C,npas_C,RELAXC)
 	      	call LBL_x(1,1,Nx,Ny,ap,AE,AW,AN,AS,B,C,npas_C,RELAXC)
 
 		if (rans_model .ne. 0) then

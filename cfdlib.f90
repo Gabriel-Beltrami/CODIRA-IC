@@ -588,10 +588,6 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 
         b(i,j)=apo(i,j)*T(i,j) + sc + P_rad(i,j)*DXP(i)*DYP(j)/cp(i,j)
 
-	if ( (i.gt.Nx/2).and.(i.le.(Nx/2)+1).and.(j==3)) then
-		b(i,j)=b(i,j)+1.0D+01
-	end if
-
 	end do
 	end do 
 
@@ -2037,8 +2033,8 @@ Subroutine COEF_V(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 
 			if (Boussinesq.eq.1) then
 								 
-				b(i,j)=(Px(i,j)-Px(i,j+1))*DXP(i)+apo*Vx(i,j) !+ RHOO*g*BBETA* 	&
-				!(flux(T(i,j),T(i,j+1),DYV(j),(DYP(j+1))/2.0D+00)-Tref )*DXP(i)*DYV(j)
+				b(i,j)=(Px(i,j)-Px(i,j+1))*DXP(i)+apo*Vx(i,j) + RHOO*g*BBETA* 	&
+				(flux(T(i,j),T(i,j+1),DYV(j),(DYP(j+1))/2.0D+00)-Tref )*DXP(i)*DYV(j)
 			else		
 			
 				b(i,j)=(Px(i,j)-Px(i,j+1))*DXP(i)+apo*Vx(i,j)-(RHO(i,j)-RHOo)*g*DXP(i)*DYV(j)
@@ -2545,7 +2541,7 @@ Subroutine PROPERTIES(Mu,CONTER,CP,CONTERo,T,Muo,CPo,RHO,Po,Pmed,Hx,Hy,DXP,DYP,T
 			end if
 
 			if (street_canyon) then
-				outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.5*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+				outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
 				if (outside_canyon) Mu(i,j)=1.0D+5
 			end if
 
