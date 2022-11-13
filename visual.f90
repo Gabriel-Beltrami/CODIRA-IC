@@ -50,7 +50,7 @@ end subroutine literatura_compare
 !-----------------------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------------------------------!
 
-subroutine write_vtk(U,V,P,T,b,iter_t,TK,e,MuT)
+subroutine write_vtk(U,V,P,T,C,b,iter_t,TK,e,MuT)
 
 	implicit none
 
@@ -58,7 +58,7 @@ subroutine write_vtk(U,V,P,T,b,iter_t,TK,e,MuT)
 	integer :: i,j,iter_t
 	real(KIND = DP), dimension(Nx+1) :: x_print
 	real(KIND = DP), dimension(Ny+1) :: Y_print
-	real(KIND = DP), dimension(Nx,Ny) :: U,V,P,T,b,PSIP,TK,e,inter_U,inter_V,MuT,	&
+	real(KIND = DP), dimension(Nx,Ny) :: U,V,P,T,C,b,PSIP,TK,e,inter_U,inter_V,MuT,	&
 										 Pk,epsi,div_T,DTK_Dt,vorticity_z
 
 	x_print(1)=XU(1)
@@ -101,6 +101,10 @@ subroutine write_vtk(U,V,P,T,b,iter_t,TK,e,MuT)
 	write ( 1, '(a)' ) 'SCALARS T float'
 	write ( 1, '(a)' ) 'LOOKUP_TABLE default'
 	write ( 1, '(f22.14)' ) ((T(i,j),i=1,(nx)),j=1,(ny))
+	
+	write ( 1, '(a)' ) 'SCALARS C float'
+	write ( 1, '(a)' ) 'LOOKUP_TABLE default'
+	write ( 1, '(f22.14)' ) ((C(i,j),i=1,(nx)),j=1,(ny))
 
 	write ( 1, '(a)' ) 'SCALARS e float'
 	write ( 1, '(a)' ) 'LOOKUP_TABLE default'
@@ -145,6 +149,10 @@ subroutine write_vtk(U,V,P,T,b,iter_t,TK,e,MuT)
 	write ( 1, '(a)' ) 'SCALARS Rij_T float'
 	write ( 1, '(a)' ) 'LOOKUP_TABLE default'
 	write ( 1, '(f22.14)' ) ((Rij_T(i,j),i=1,(nx)),j=1,(ny))
+	
+	write ( 1, '(a)' ) 'SCALARS Rij_C float'
+	write ( 1, '(a)' ) 'LOOKUP_TABLE default'
+	write ( 1, '(f22.14)' ) ((Rij_C(i,j),i=1,(nx)),j=1,(ny))
 
 	write ( 1, '(a)' ) 'SCALARS Rij_u float'
 	write ( 1, '(a)' ) 'LOOKUP_TABLE default'
@@ -196,10 +204,10 @@ end subroutine write_vtk
 !-----------------------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------------------------------!
 
-Subroutine print_Residual(iter,iter_t,Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Rmax_T,	&
+Subroutine print_Residual(iter,iter_t,Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Res_C,Rmax_T,Rmax_C,	&
 					Res_Tk,Rmax_Tk,Res_e,Rmax_e) 
 
-	real(KIND = DP) :: Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Rmax_T,Res_Tk,Rmax_Tk,Res_e,Rmax_e
+	real(KIND = DP) :: Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Res_C,Rmax_T,Rmax_C,Res_Tk,Rmax_Tk,Res_e,Rmax_e
 	integer :: iter,iter_t
 
 !	write(*,*) 'Iteracao no tempo:',iter_t
@@ -213,6 +221,8 @@ Subroutine print_Residual(iter,iter_t,Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res
 	write(*,*) 'Global error of P:',Res_P,"  |  ",'MAX local error of P:',Rmax_P
 	write(*,*) "-----------------------------------------------"
 	write(*,*) 'Global error of T:',Res_T,"  |  ",'MAX local error of T:',Rmax_T
+	write(*,*) "-----------------------------------------------"
+	write(*,*) 'Global error of C:',Res_C,"  |  ",'MAX local error of C:',Rmax_C
 	write(*,*) "-----------------------------------------------"
 	write(*,*) 'Global error of TK:',Res_TK,"  |  ",'MAX local error of TK:',Rmax_TK
 	write(*,*) "-----------------------------------------------"
@@ -585,7 +595,8 @@ subroutine write_matlab()
 	open(unit=1, file ='./outputdata/matlab/x' //trim(case_jet_string)// '.dat')
 	open(unit=2, file ='./outputdata/matlab/y' //trim(case_jet_string)// '.dat')
 
-	open(unit=3, file ='./outputdata/matlab/T' //trim(case_jet_string)// '.dat')
+	open(unit=33, file ='./outputdata/matlab/T' //trim(case_jet_string)// '.dat')
+	open(unit=34, file ='./outputdata/matlab/C' //trim(case_jet_string)// '.dat')
 
 	open(unit=4, file ='./outputdata/matlab/stream.dat')
 
@@ -632,7 +643,11 @@ subroutine write_matlab()
 	end do
 
 	do i=1,Nx
-		write(3,*) T(i,:)
+		write(33,*) T(i,:)
+	end do
+
+	do i=1,Nx
+		write(34,*) C(i,:)
 	end do
 
 	do i=1,Nx
@@ -710,7 +725,8 @@ subroutine write_matlab()
 
 	close(1)
     close(2)
-	close(3)
+	close(33)
+	close(34)
     close(4)
     close(55)
     close(56)    
@@ -737,13 +753,13 @@ end subroutine write_matlab
 !-----------------------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------------------------------!
 
-subroutine write_tecplot(U,V,P,T,RHO,MuT,TK,e)
+subroutine write_tecplot(U,V,P,T,C,RHO,MuT,TK,e)
 
 	implicit none
 
 	integer :: i,j
 	real(KIND = DP), dimension(Ny) :: DYP
-	real(KIND = DP), dimension(Nx,Ny) :: U,V,P,T,PSIP,RHO,MuT,TK,e,inter_U,inter_V
+	real(KIND = DP), dimension(Nx,Ny) :: U,V,P,T,C,PSIP,RHO,MuT,TK,e,inter_U,inter_V
 
 	open(unit=100, file ='./outputdata/tecplot.dat')
 
@@ -752,14 +768,14 @@ subroutine write_tecplot(U,V,P,T,RHO,MuT,TK,e)
 	CALL interpol_UV(U,V,inter_U,inter_V)
 
 	write(100,*)"Title= RANS"
- 	write(100,*)"Variables=X,Y,u,v,PSIP,T,P,TK,Mut"	
+ 	write(100,*)"Variables=X,Y,u,v,PSIP,T,C,P,TK,Mut"	
 	write(100,*)"Zone I=",Nx, "J=" ,Ny, "F=point"
 	write(100,*)
 	
 	do  j=1,Ny
 		do i=1,Nx
 	
-		Write(100,"(200F25.15)") X(i),Y(j),inter_U(i,j),inter_V(i,j),PSIP(i,j),T(i,j),	&
+		Write(100,"(200F25.15)") X(i),Y(j),inter_U(i,j),inter_V(i,j),PSIP(i,j),T(i,j),C(i,j),	&
 		P(i,j),TK(i,j),e(i,j),Mut(i,j)
 
 		end do

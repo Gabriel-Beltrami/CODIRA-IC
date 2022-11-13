@@ -28,8 +28,8 @@ program CONDIRA
 	call dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo)			! Compute dependent variables
 	!call GRID_half_jet(DXP,DYP,DXU,DYV,X,Y,XU,YV)					! Grid generation
 	call GRID2d (DXP,DYP,DXU,DYV,X,Y,XU,YV,Hx,Hy)
-	call start(U,V,P,T,Tref,rho,Fep,Fnp,TKx,e)						! Initaial values for U,V and P
-	call write_vtk(U,V,P,T,b,iter_t,TK,e,MuT)
+	call start(U,V,P,T,C,Tref,rho,Fep,Fnp,TKx,e)						! Initaial values for U,V and P
+	call write_vtk(U,V,P,T,C,b,iter_t,TK,e,MuT)
 
 	!--------------------------------------- SIMPLE/SIMPLEC -------------------------------------------------------!
 	do iter=1,itermax
@@ -91,6 +91,13 @@ program CONDIRA
 
 !	      	call LBL_ADI(1,1,Nx,Ny,ap,AE,AW,AN,AS,B,T,npas_T,RELAXT)
 	      	call LBL_x(1,1,Nx,Ny,ap,AE,AW,AN,AS,B,T,npas_T,RELAXT)
+	      	
+	      	   ! Compute C 	
+	      	call COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,							&
+			CONTER,Cp,RHO,U,V,C,ap,ae,aw,as,an,b,Res_C,Rmax_C,dt,Fep,Fnp,MUt)
+
+!	      	call LBL_ADI(1,1,Nx,Ny,ap,AE,AW,AN,AS,B,T,npas_T,RELAXT)
+	      	call LBL_x(1,1,Nx,Ny,ap,AE,AW,AN,AS,B,C,npas_C,RELAXC)
 
 		if (rans_model .ne. 0) then
 
@@ -110,19 +117,19 @@ program CONDIRA
 
 		   ! Monitoring residual values during execution
 		if (mod(iter,1000)==0) then
-			call print_Residual (iter,iter_t,Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Rmax_T,	&
+			call print_Residual (iter,iter_t,Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Res_C,Rmax_T,Rmax_C,	&
 				Res_Tk,Rmax_Tk,Res_e,Rmax_e)
 		end if
 
-		if ( converegence(Res_U,Res_V,Res_P,Res_T,Res_e,Res_TK,iter)  ) then
+		if ( converegence(Res_U,Res_V,Res_P,Res_T,Res_C,Res_e,Res_TK,iter)  ) then
 			exit
 		end if
 
 	end do
 !--------------------------------------------- 		 END Loop 	-----------------------------------------------------!
-	call print_Residual (iter,iter_t,Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Rmax_T,	&
+	call print_Residual (iter,iter_t,Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Res_C,Rmax_T,Rmax_C,	&
 				Res_Tk,Rmax_Tk,Res_e,Rmax_e)
-	call write_vtk(U,V,P,T,b,iter_t,TK,e,MuT)
+	call write_vtk(U,V,P,T,C,b,iter_t,TK,e,MuT)
 	call write_matlab()
 
 	call CPU_TIME(Time_finish)

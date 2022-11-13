@@ -26,6 +26,7 @@ module user
 		epsilonV=1.0D-7,		& ! Residual tolerance for V
 		epsilonP=1.0D-7,		& ! Residual tolerance for P
 		epsilonT=1.0D-7,		& ! Residual tolerance for T
+		epsilonC=1.0D-7,		& ! Residual tolerance for C
 		epsilonTK=1.0D-7,		& ! Residual tolerance for TK
 		epsilone=1.0D-7,		& ! Residual tolerance for e
 
@@ -33,6 +34,7 @@ module user
 		relaxV=0.8D+00,			& ! Relax factor for V
 		relaxP=1.0D+00,			& ! Relax factor for P
 		relaxT=0.7D+00,			& ! Relax factor for T
+		relaxC=0.7D+00,			& ! Relax factor for C
 		relaxTK=0.8D+00,		& ! Relax factor for TK
 		relaxe=0.8D+00,			& ! Relax factor for e
 
@@ -54,19 +56,19 @@ module user
 		Ra=100,			  & ! Rayleigh Number
 		Bbeta=3.322D-03,		  & ! Expansion Coefficient for the Boussinesq Approximation
 		Pr=0.71D+0,			  & ! Prantl Number
-		Th=300D+0,			  & ! Hot Temperature
+		Th=300D+00,			  & ! Hot Temperature
 		Tc=300D+00,			  & ! Cold Temperature
 		G=9.8D+00,			  & ! Gravity
 		R=287.0D+00,			  & ! Gas Constant for Air
 		Po=101325.0D+00,		  & ! Initial Pressure			
 
 		
-		T_coflow= 800d0, &
+		T_coflow= 800d0, C_coflow= 800d0, &
 		CONTERo,							& ! Thermal conductivity
 		MUo,ratio_mu,ratio_conter,			& ! Viscoity
 		RHOo,								& ! Density
 		Cpo	,								& ! Specific heat	
-		Res_U,Res_V,Res_P,Res_T,Res_TK,Res_e,Rmax_U,Rmax_V,Rmax_P,Rmax_T,Rmax_e,Rmax_TK, &
+		Res_U,Res_V,Res_P,Res_T,Res_C,Res_TK,Res_e,Rmax_U,Rmax_V,Rmax_P,Rmax_T,Rmax_C,Rmax_e,Rmax_TK, &
 		tadim,DeltaT,dt_adim,Tref,PSIP,RHOmed,Pmed, &
 		time_start,time_finish
 
@@ -94,7 +96,8 @@ module user
 		npas_P=10,			& ! Time to apply the P-solver subroutine per iteration 
 		npas_U=1,			& ! Time to apply the U-solver subroutine per iteration 
 		npas_V=1,			& ! Time to apply the V-solver subroutine per iteration
-		npas_T=1,			& ! Time to apply the T-solver subroutine per iteration 
+		npas_T=1,			& ! Time to apply the T-solver subroutine per iteration
+		npas_C=1,			& ! Time to apply the C-solver subroutine per iteration
 
 		n=3,				& ! Interpolation scheme: 1:Central, 2:Upwind, 3:Hybrid, 4:Power law, 5:Exponential
 
@@ -117,18 +120,18 @@ module user
 		DXP,X,DXU,XU
 
 	real(KIND = DP), dimension(Ny) :: 	&
-		DYP,Y,DYV,YV,U_in,Tk_in,e_in,T_in
+		DYP,Y,DYV,YV,U_in,Tk_in,e_in,T_in,C_in
 
 	real(KIND = DP), dimension(Nx,Ny) :: 	&
 		apu,apv,ae,aw,an,as,ap,b,du,dv,	&
 		Ux,U,Uold,			&
 		Vx,V,Vold,			&
-		Px,P,Pc,T,Told,			&
+		Px,P,Pc,T,C,Told,Cold,			&
 		mu,CONTER,cp,rho,RHOold,	&
 		TxxL, TyyL, TxyL,		&
 		TxxT, TyyT, TxyT,		&
 		MuT, TK,Tkx, e,			&
-		Fep,Fnp,Pk,Gk,APUNB,APVNB,Rij_T,Rij_u,Rij_v,Sdc_ij_v, &
+		Fep,Fnp,Pk,Gk,APUNB,APVNB,Rij_T,Rij_C,Rij_u,Rij_v,Sdc_ij_v, &
 		P_rad
 
 end module user

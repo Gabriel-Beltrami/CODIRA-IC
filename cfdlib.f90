@@ -265,12 +265,12 @@ end subroutine stressLT
 !-----------------------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------------------------------!
 
-subroutine start (U,V,P,T,Tref,rho,Fep,Fnp,TK,e)	
+subroutine start (U,V,P,T,C,Tref,rho,Fep,Fnp,TK,e)	
 
 	implicit none
 	integer:: i,j,stat
 	real(KIND = DP)  :: Tref
-	real(KIND = DP), dimension(Nx,Ny) :: U,V,P,T,RHO
+	real(KIND = DP), dimension(Nx,Ny) :: U,V,P,T,C,RHO
 	real(KIND = DP), dimension(Nx,Ny),intent(out) :: Fep,Fnp,TK,e
 	character(len=8) :: case_jet_string
 
@@ -302,6 +302,13 @@ subroutine start (U,V,P,T,Tref,rho,Fep,Fnp,TK,e)
 		end do
 	end do
 
+	Do j=1,Ny
+		Do i=1,Nx
+
+!			C(i,j)=x(i)*y(j)*Tref
+			C(i,j)=Tref
+		end do
+	end do
 
 	Do j=1,Ny
 		Do i=1,Nx
@@ -681,6 +688,280 @@ end Subroutine coef_T
 !C
       RETURN  
       END
+!-----------------------------------------------------------------------------------------------!
+!-----------------------------------------------------------------------------------------------!
+!						coef_C 						!
+!-----------------------------------------------------------------------------------------------!
+!-----------------------------------------------------------------------------------------------!
+
+subroutine COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
+		CONTER,Cp,RHO,U,V,C,ap,ae,aw,as,an,b,Res_C,Rmax_C,dt,Fep,Fnp,MUt)
+
+	implicit none
+		   
+	integer:: i,j,npas
+
+	real(KIND = DP)  :: 			&
+		Fe,Fw,Fn,Fs,			&
+		De,Dw,Dn,Ds,			&
+		RES_C,resi,summ,Rmax_C,		&
+		Pes,Pen,Pee,Pew,		&
+		dt,				&
+		GIE,GIW,GIN,GIS,		&
+		GIEL,GIWL,GINL,GISL,		&
+		GIET,GIWT,GINT,GIST,sc,sp,Sdc		
+
+	real(KIND = DP), dimension(Nx) :: 	&
+		DXP,X,XU,DXU
+
+	real(KIND = DP), dimension(Ny) :: 	&
+		DYP,Y,YV,DYV
+
+	real(KIND = DP), dimension(Nx,Ny) :: 	&
+		ae,aw,an,as,ap,b,apo,		&
+		U,V,C,conter,Cp,rho,		&
+		Fep,Fnp,MUt
+
+!-----------------------------------------------------------------------------------------------!
+!					varaibles reset 		!
+!-----------------------------------------------------------------------------------------------!
+																	 
+																	 
+	do j=1,Ny
+		do i=1,Nx							  
+																	 
+			ae(i,j)=0.0D+00
+																			 
+			aw(i,j)=0.0D+00
+																			 
+			an(i,j)=0.0D+00
+																			 
+			as(i,j)=0.0D+00
+																			 
+			ap(i,j)=0.0D+00
+																			 
+			b(i,j)=0.0D+00
+
+			apo(i,j)=0.0D+00
+																	 
+		end do
+	end do 
+
+
+
+	do  j=2,Ny-1
+		do  i=2,Nx-1
+
+!-----------------------------------------------------------------------------------------------!
+!				Mass flux corssing U-VC FACES					!
+!-----------------------------------------------------------------------------------------------!
+
+      Fe=Fep(i,j)*DYP(j)
+	
+      Fw=Fep(i-1,j)*DYP(j)
+	
+      Fn=Fnp(i,j)*DXP(i)
+	
+      Fs=Fnp(i,j-1)*DXP(i)
+
+
+!-----------------------------------------------------------------------------------------------!
+!				DIFFUSION IN THE U-VC FACES					!
+!-----------------------------------------------------------------------------------------------!
+
+	Pr = Cpo * mu(i,j) / conter(i,j)
+
+
+!	 Calculo da gamma
+	GIEL=flux(Mu(i,j),Mu(i+1,j),DXU(i),(DXP(i+1)/2.0D+0) )/Pr
+
+	GIWL=flux(Mu(i,j),Mu(i-1,j),DXU(i-1),(DXP(i-1)/2.0D+0))/Pr
+	
+	GINL=flux(Mu(i,j),Mu(i,j+1),DYV(j),(DYP(j+1)/2.0D+0))/Pr
+	
+	GISL=flux(Mu(i,j),Mu(i,j-1),DYV(j-1),(DYP(j-1)/2D+0))/Pr
+
+
+	   
+	GIET=flux(MUT(i,j),MUT(i+1,j),DXU(i),(DXP(i+1)/2.0D+0))	/ Theta_t
+
+	GIWT=flux(MUT(i,j),MUT(i-1,j),DXU(i-1),(DXP(i-1)/2.0D+0)) / Theta_t
+	
+	GINT=flux(MUT(i,j),MUT(i,j+1),DYV(j),(DYP(j+1)/2.0D+0)) / Theta_t
+	
+	GIST=flux(MUT(i,j),MUT(i,j-1),DYV(j-1),(DYP(j-1)/2D+0)) / Theta_t
+
+
+	GIE = GIEL + GIET
+	GIW = GIWL + GIWT
+	GIN = GINL + GINT
+	GIS = GISL + GIST
+
+	if (i==2) 	GIW = Mu(i-1,j)/Pr      + MuT(i-1,j)/Theta_t    ! fluid boundary
+	if (i==Nx-1) 	GIE = Mu(i+1,j)/Pr  + MuT(i+1,j)/Theta_t    ! fluid boundary
+	if (j==2) 	GIS = Mu(i,j-1)/Pr      + MuT(i,j-1)/Theta_t   	!  fluid boundary
+	if (j==Ny-1) 	GIN = Mu(i,j+1)/Pr  + MuT(i,j+1)/Theta_t    !  fluid boundary
+
+	
+!if ( (i.eq.3) .and. (j.eq.3) ) then
+!	write(*,*) GIE, GIEL 
+!	stop
+!end if
+
+
+!	Calculo do flux difusivo
+	
+	De=GIE*DYP(j)/( (x(i+1)-x(i)) )
+	
+	Dw=GIW*DYP(j)/( (x(i)-x(i-1)) )
+	
+	Dn=GIN*DXP(i)/( (y(j+1)-y(j)) )
+	
+	Ds=GIS*DXP(i)/( (y(j)-y(j-1)) )
+
+
+!-----------------------------------------------------------------------------------------------!
+!					PECLET NUMBER						!
+!-----------------------------------------------------------------------------------------------!
+
+
+	Pee=Fe/De
+
+    Pew=Fw/Dw
+
+	Pen=Fn/Dn
+
+	Pes=Fs/Ds
+
+
+!-----------------------------------------------------------------------------------------------!
+!					High_order_scheme				!
+!-----------------------------------------------------------------------------------------------!
+	sc = 0.0D+0
+	sp = 0.0D+0
+	Sdc = 0.0D+0
+
+	if ( (i.gt. 2).and.(i.lt. Nx-1).and.(j.gt. 2).and.(j.lt. Ny-1).and.(n_high_order_scheme.ne. 0) &
+		.and. high_order_on_scalars ) then
+
+		call high_order_scheme( i,j,Fe,Fw,Fn,Fs,					&
+			C(i-2,j),C(i-1,j),C(i,j),C(i+1,j),C(i+2,j),		&
+			C(i,j-2),C(i,j-1),C(i,j+1),C(i,j+2),			&
+			dxu(i-2),dxu(i-1),dxu(i),dxu(i+1),			&
+			dyv(j-2),dyv(j-1),dyv(j),dyv(j+1),Sdc			)
+		
+
+		sc = MAX(Sdc,0.0D+0)
+		sp = Min(Sdc / (C(i,j)+1.0D-25),0.0D+0)
+
+	end if
+
+!-----------------------------------------------------------------------------------------------!
+!					COEFICIENT DETERMINATION				!
+!-----------------------------------------------------------------------------------------------!
+
+	
+
+	ae(i,j)=De*A(n,Pee)+DMAX1(-Fe,0.0D+00)
+
+	aw(i,j)=Dw*A(n,Pew)+DMAX1(Fw,0.0D+00)
+
+	an(i,j)=Dn*A(n,Pen)+DMAX1(-Fn,0.0D+00)
+
+	as(i,j)=Ds*A(n,Pes)+DMAX1(Fs,0.0D+00)
+
+	apo(i,j)=(RHO(i,j)*DXP(i)*DYP(j))/dt
+	
+        ap(i,j)=ae(i,j)+aw(i,j)+an(i,j)+as(i,j)+apo(i,j) - sp
+
+        b(i,j)=apo(i,j)*C(i,j) + sc + P_rad(i,j)*DXP(i)*DYP(j)/cp(i,j)
+
+	if ( (i.gt.Nx/2).and.(i.le.(Nx/2)+1).and.(j==3)) then
+		b(i,j)=b(i,j)+1.0D+01
+	end if
+
+	end do
+	end do 
+
+
+
+!-----------------------------------------------------------------------------------------------!
+!					BOUNDARY CONDITIONS					!
+!-----------------------------------------------------------------------------------------------!
+     
+
+!					SOUTH					!
+	Do i=1,(Nx)
+		ae(i,1)=0.0D+00
+		aw(i,1)=0.0D+00
+		ap(i,1)=1.0D+00
+		an(i,1)=1.0D+00
+		as(i,1)=0.0D+00
+		b(i,1) =0.0D+00
+	end do
+   
+!					NORTH					!
+	Do i=1,(Nx)
+		ae(i,Ny)=0.0D+00
+		aw(i,Ny)=0.0D+00
+		ap(i,Ny)=1.0D+00
+		an(i,Ny)=0.0D+00
+		as(i,Ny)=0.0D+00!0.0D+00
+		b(i,Ny) =3.0D+02 !C_coflow
+	end do
+ 
+!					WEST					!
+	Do j=1,Ny
+		ae(1,j)=1.0D+00
+		aw(1,j)=0.0D+00
+		ap(1,j)=1.0D+00
+		an(1,j)=0.0D+00
+		as(1,j)=0.0D+00
+		b(1,j) =0.0D+00
+	end do
+
+!write(*,*) b(1,:)
+!stop
+
+!					EAST					!
+	Do j=2,Ny-1
+		ae(Nx,j)=0.0D+00
+		aw(Nx,j)=1.0D+00
+		ap(Nx,j)=1.0D+00
+		an(Nx,j)=0.0D+00
+		as(Nx,j)=0.0D+00
+		b(Nx,j) =0.0D+00
+	END DO
+
+
+
+!-----------------------------------------------------------------------------------------------!
+!					RESIDUAL						!
+!-----------------------------------------------------------------------------------------------!
+
+
+	summ=0.0D+00
+	Rmax_C=0.0D+00
+
+	do  j=2,Ny-1
+		do i=2,Nx-1
+
+		Resi=dabs(ap(i,j)*C(i,j)-ae(i,j)*C(i+1,j)-aw(i,j)*C(i-1,j)-as(i,j)*C(i,j-1)-an(i,j)*C(i,j+1)-b(i,j))
+		Rij_C(i,j) = Resi
+		summ=summ+(Resi*Resi)
+
+		if (Resi .gt. Rmax_C) Rmax_C=Resi
+
+		end do
+	end do
+
+	Res_C=dsqrt(summ)
+
+	
+	return
+
+end Subroutine coef_C
+
 !-----------------------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------------------------------!
 !						coef_TK 						!
@@ -2102,10 +2383,10 @@ end Subroutine reset
 !-----------------------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------------------------------!
 
-function converegence(Res_U,Res_V,Res_P,Res_T,Res_e,Res_TK,iter) 
+function converegence(Res_U,Res_V,Res_P,Res_T,Res_C,Res_e,Res_TK,iter) 
 
 
-	real(KIND = DP):: Res_U,Res_V,Res_P,Res_T,Res_e,Res_TK,Rmax
+	real(KIND = DP):: Res_U,Res_V,Res_P,Res_T,Res_C,Res_e,Res_TK,Rmax
 	logical:: converegence
 	integer:: iter	       
 
@@ -2113,11 +2394,11 @@ function converegence(Res_U,Res_V,Res_P,Res_T,Res_e,Res_TK,iter)
 	Res_U=1.0D+00
 	end if
 
-	Rmax = DMAX1(Res_U,Res_V,Res_P,Res_T,Res_e,Res_TK)
+	Rmax = DMAX1(Res_U,Res_V,Res_P,Res_T,Res_C,Res_e,Res_TK)
 	if (Rmax .gt. 1.0D+20) stop 'A friendly message: diverged'
 	
 	converegence=(( (Res_U.LE.epsilonU).and.(Res_V.LE.epsilonV)).and.(Res_P.LE.epsilonP).and.(Res_T.LE.epsilonT) &
-			.and.(Res_TK.LE.epsilonTK).and.(Res_e.LE.epsilone))
+			.and.(Res_C.LE.epsilonC).and.(Res_TK.LE.epsilonTK).and.(Res_e.LE.epsilone))
 	
 	return     
 end 
