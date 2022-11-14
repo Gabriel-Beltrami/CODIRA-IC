@@ -2234,7 +2234,7 @@ Subroutine COEF_P(DXP,DYP,Ux,Vx,du,dv,ap,ae,aw,as,an,b,RES_P,Rmax_P,RHO,apu,apv,
 			      -RHOe*DYP(j)*Ux(i,j)  		&
 			      +RHOs*DXP(i)*Vx(i,j-1)   		&
 			      -RHOn*DXP(i)*Vx(i,j)
-			      !+(RHO(i,j)-RHO(i,j) )*DXP(i)*DYP(j)/dt	  
+			      +(RHO(i,j)-RHO(i,j) )*DXP(i)*DYP(j)/dt	  
 
 
 		end do
