@@ -2233,7 +2233,7 @@ Subroutine COEF_P(DXP,DYP,Ux,Vx,du,dv,ap,ae,aw,as,an,b,RES_P,Rmax_P,RHO,apu,apv,
 			b(i,j)=RHOw*DYP(j)*Ux(i-1,j) 		&
 			      -RHOe*DYP(j)*Ux(i,j)  		&
 			      +RHOs*DXP(i)*Vx(i,j-1)   		&
-			      -RHOn*DXP(i)*Vx(i,j)
+			      -RHOn*DXP(i)*Vx(i,j)             &
 			      +(RHO(i,j)-RHO(i,j) )*DXP(i)*DYP(j)/dt	  
 
 
@@ -2542,7 +2542,8 @@ Subroutine PROPERTIES(Mu,CONTER,CP,CONTERo,T,Muo,CPo,RHO,Po,Pmed,Hx,Hy,DXP,DYP,T
 
 			if (street_canyon) then
 				outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
-				if (outside_canyon) Mu(i,j)=1.0D+5
+				if (outside_canyon) Mu(i,j)=1.0D+12
+				if (outside_canyon) CONTER(i,j)=1.0D+20
 			end if
 
 
