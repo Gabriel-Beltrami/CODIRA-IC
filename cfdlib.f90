@@ -603,9 +603,9 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 		ae(i,1)=0.0D+00
 		aw(i,1)=0.0D+00
 		ap(i,1)=1.0D+00
-		an(i,1)=1.0D+00
+		an(i,1)=0.0D+00
 		as(i,1)=0.0D+00
-		b(i,1) =0.0D+00
+		b(i,1) =3.0D+02
 	end do
    
 !					NORTH					!
@@ -615,18 +615,37 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 		ap(i,Ny)=1.0D+00
 		an(i,Ny)=0.0D+00
 		as(i,Ny)=0.0D+00!0.0D+00
-		b(i,Ny) =3.0D+02 !T_coflow
+		b(i,Ny) =288.0D+0 !T_coflow
 	end do
  
 !					WEST					!
 	Do j=1,Ny
-		ae(1,j)=1.0D+00
+		ae(1,j)=0.0D+00
 		aw(1,j)=0.0D+00
 		ap(1,j)=1.0D+00
 		an(1,j)=0.0D+00
 		as(1,j)=0.0D+00
-		b(1,j) =0.0D+00
+		b(1,j) =300.0D+00
 	end do
+
+!if (street_canyon) then
+	if (.TRUE.) then
+
+	!				WEST					!
+		Do j=1,Ny
+			outside_canyon = Y(j).gt.(0.5*Hy)
+			if (outside_canyon) then
+			ae(1,j)		=	0.0D+00
+			aw(1,j)		=	0.0D+00
+			ap(1,j)	=	1.0D+00
+			an(1,j)		=	0.0D+00
+			as(1,j)		=	0.0D+00
+			b(1,j)		=       288.0D+00
+			end if  	
+		end do
+
+
+	end if
 
 !write(*,*) b(1,:)
 !stop
@@ -634,14 +653,31 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 !					EAST					!
 	Do j=2,Ny-1
 		ae(Nx,j)=0.0D+00
-		aw(Nx,j)=1.0D+00
+		aw(Nx,j)=0.0D+00
 		ap(Nx,j)=1.0D+00
 		an(Nx,j)=0.0D+00
 		as(Nx,j)=0.0D+00
-		b(Nx,j) =0.0D+00
+		b(Nx,j) =300.0D+00
 	END DO
 
+!if (street_canyon) then
+	if (.TRUE.) then
 
+	!				EAST					!
+		Do j=2,Ny-1
+			outside_canyon = Y(j).gt.(0.3*Hy)
+			if (outside_canyon) then
+			ae(Nx,j)		=	0.0D+00
+			aw(Nx,j)		=	0.0D+00
+			ap(Nx,j)	=	1.0D+00
+			an(Nx,j)		=	0.0D+00
+			as(Nx,j)		=	0.0D+00
+			b(Nx,j)		=       288.0D+00
+			end if  	
+		end do
+
+
+	end if
 
 !-----------------------------------------------------------------------------------------------!
 !					RESIDUAL						!
@@ -650,6 +686,8 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 
 	summ=0.0D+00
 	Rmax_T=0.0D+00
+
+if (street_canyon .eqv. .false.) then 
 
 	do  j=2,Ny-1
 		do i=2,Nx-1
@@ -662,6 +700,23 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 
 		end do
 	end do
+
+else
+
+	do  j=2,Ny-1
+	do i=2,Nx-1
+		outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+			if (outside_canyon) then
+			else
+				Resi=dabs(ap(i,j)*T(i,j)-ae(i,j)*T(i+1,j)-aw(i,j)*T(i-1,j)-as(i,j)*T(i,j-1)-an(i,j)*T(i,j+1)-b(i,j))
+				Rij_T(i,j) = Resi
+				summ=summ+(Resi*Resi)
+
+				if (Resi .gt. Rmax_T) Rmax_T=Resi
+			end if
+	end do
+	end do
+end if
 
 	Res_T=dsqrt(summ)
 
@@ -1798,6 +1853,8 @@ Subroutine coef_U(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 	summ=0.0D+00
 	Rmax_U=0.0D+00
 
+if (street_canyon .eqv. .false.) then 
+
 	do  j=2,Ny-1
 		do i=2,Nx-2
 
@@ -1808,6 +1865,23 @@ Subroutine coef_U(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 
 		end do
 	end do
+
+else
+
+	do j=2,Ny-1
+	do i=2,Nx-2
+		outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+			if (outside_canyon) then
+			else
+				Resi=dabs(apu(i,j)*Ux(i,j)-ae(i,j)*Ux(i+1,j)-aw(i,j)*Ux(i-1,j)-as(i,j)*Ux(i,j-1)-an(i,j)*Ux(i,j+1)-b(i,j))
+				summ=summ+(Resi*Resi)
+				Rij_u(i,j) = Resi
+				if (Resi .gt. Rmax_U) Rmax_U=Resi
+			end if
+	end do
+	end do
+
+end if
 
 	Res_U=dsqrt(summ)
 	
@@ -2125,6 +2199,8 @@ Subroutine COEF_V(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 	summ=0.0D+00
 	Rmax_V=0.0D+00
 
+if (street_canyon .eqv. .false.) then 
+
 	do j=2,Ny-2
 		do  i=2,Nx-1
 
@@ -2137,9 +2213,24 @@ Subroutine COEF_V(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 		end do
 	end do
 
-	Res_V=dsqrt(summ)
-	
+else
 
+	do j=2,Ny-2
+	do i=2,Nx-1
+		outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+			if (outside_canyon) then
+			else
+				Resi=apv(i,j)*Vx(i,j)-ae(i,j)*Vx(i+1,j)-aw(i,j)*Vx(i-1,j)-as(i,j)*Vx(i,j-1)-an(i,j)*Vx(i,j+1)-b(i,j)
+				summ=summ+(Resi*Resi)
+				Rij_v(i,j) = Resi
+				if (Resi .gt. Rmax_V) Rmax_V=Resi
+			end if
+	end do
+	end do
+
+end if
+
+	Res_V=dsqrt(summ)
 	
 	return
 
@@ -2336,6 +2427,9 @@ Subroutine COEF_P(DXP,DYP,Ux,Vx,du,dv,ap,ae,aw,as,an,b,RES_P,Rmax_P,RHO,apu,apv,
 
 	summ=0.0D+00
 	Rmax_P=0.0D+00
+
+if (street_canyon .eqv. .false.) then 
+
 	do j=2,Ny-1
 		do i=2,Nx-1
 
@@ -2343,6 +2437,21 @@ Subroutine COEF_P(DXP,DYP,Ux,Vx,du,dv,ap,ae,aw,as,an,b,RES_P,Rmax_P,RHO,apu,apv,
 			if (DABS(b(i,j)) .gt. Rmax_P) Rmax_P=DABS(b(i,j))  
 		end do
 	end do
+
+else
+
+		do j=2,Ny-1
+			do i=2,Nx-1
+				outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+					if (outside_canyon) then
+					else
+						summ=summ+DABS(b(i,j))
+						if (DABS(b(i,j)) .gt. Rmax_P) Rmax_P=DABS(b(i,j))
+					end if
+			end do
+		end do
+
+end if
 
 	Res_P=summ
 	
