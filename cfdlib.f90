@@ -994,6 +994,8 @@ subroutine COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 	summ=0.0D+00
 	Rmax_C=0.0D+00
 
+if (street_canyon .eqv. .false.) then 
+
 	do  j=2,Ny-1
 		do i=2,Nx-1
 
@@ -1006,8 +1008,25 @@ subroutine COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 		end do
 	end do
 
-	Res_C=dsqrt(summ)
+else
 
+	do  j=2,Ny-1
+	do i=2,Nx-1
+		outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+			if (outside_canyon) then
+			else
+				Resi=dabs(ap(i,j)*C(i,j)-ae(i,j)*C(i+1,j)-aw(i,j)*C(i-1,j)-as(i,j)*C(i,j-1)-an(i,j)*C(i,j+1)-b(i,j))
+				Rij_C(i,j) = Resi
+				summ=summ+(Resi*Resi)
+
+				if (Resi .gt. Rmax_C) Rmax_C=Resi
+			end if
+	end do
+	end do
+
+end if
+
+	Res_C=dsqrt(summ)
 	
 	return
 
