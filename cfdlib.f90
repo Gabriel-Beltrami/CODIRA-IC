@@ -925,7 +925,7 @@ subroutine COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 	
         ap(i,j)=ae(i,j)+aw(i,j)+an(i,j)+as(i,j)+apo(i,j) - sp
 
-        b(i,j)=apo(i,j)*C(i,j) + sc + P_rad(i,j)*DXP(i)*DYP(j)/cp(i,j)
+        b(i,j)=apo(i,j)*C(i,j) + sc
 
 	if ( (i.gt.Nx/2).and.(i.le.(Nx/2)+1).and.(j==3)) then
 		b(i,j)=b(i,j)+1.0D+01
