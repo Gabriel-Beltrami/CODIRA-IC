@@ -705,7 +705,7 @@ else
 
 	do  j=2,Ny-1
 	do i=2,Nx-1
-		outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+		outside_canyon =(i.ge.(0.7*Nx-1)).and.(j.le.(0.3*Ny+1)).or.(i.le.(0.3*Nx+1)).and.(j.le.(0.5*Ny+1))
 			if (outside_canyon) then
 			else
 				Resi=dabs(ap(i,j)*T(i,j)-ae(i,j)*T(i+1,j)-aw(i,j)*T(i-1,j)-as(i,j)*T(i,j-1)-an(i,j)*T(i,j+1)-b(i,j))
@@ -1012,7 +1012,7 @@ else
 
 	do  j=2,Ny-1
 	do i=2,Nx-1
-		outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+		outside_canyon =(i.ge.(0.7*Nx-1)).and.(j.le.(0.3*Ny+1)).or.(i.le.(0.3*Nx+1)).and.(j.le.(0.5*Ny+1))
 			if (outside_canyon) then
 			else
 				Resi=dabs(ap(i,j)*C(i,j)-ae(i,j)*C(i+1,j)-aw(i,j)*C(i-1,j)-as(i,j)*C(i,j-1)-an(i,j)*C(i,j+1)-b(i,j))
@@ -1889,7 +1889,7 @@ else
 
 	do j=2,Ny-1
 	do i=2,Nx-2
-		outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+		outside_canyon =(i.ge.(0.7*Nx-1)).and.(j.le.(0.3*Ny+1)).or.(i.le.(0.3*Nx)).and.(j.le.(0.5*Ny+1))
 			if (outside_canyon) then
 			else
 				Resi=dabs(apu(i,j)*Ux(i,j)-ae(i,j)*Ux(i+1,j)-aw(i,j)*Ux(i-1,j)-as(i,j)*Ux(i,j-1)-an(i,j)*Ux(i,j+1)-b(i,j))
@@ -2236,7 +2236,7 @@ else
 
 	do j=2,Ny-2
 	do i=2,Nx-1
-		outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+		outside_canyon =(i.ge.(0.7*Nx-1)).and.(j.lt.(0.3*Ny)).or.(i.le.(0.3*Nx+1)).and.(j.lt.(0.5*Ny))
 			if (outside_canyon) then
 			else
 				Resi=apv(i,j)*Vx(i,j)-ae(i,j)*Vx(i+1,j)-aw(i,j)*Vx(i-1,j)-as(i,j)*Vx(i,j-1)-an(i,j)*Vx(i,j+1)-b(i,j)

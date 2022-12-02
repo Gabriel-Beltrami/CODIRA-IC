@@ -90,7 +90,7 @@ module user
 	integer::					&
 !		itermax_t=15000,			& ! Maximum number of iterations
 
-		itermax=100000,			& ! Maximum number of iterations
+		itermax=50000,			& ! Maximum number of iterations
 		iter,iter_t,i,j,		&
 
 		npas_P=10,			& ! Time to apply the P-solver subroutine per iteration 
