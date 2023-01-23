@@ -12,20 +12,20 @@ contains
 !-----------------------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------------------------------!
 
-subroutine dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo)
+subroutine dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo,U_bg)
 			
 
 	implicit none
 	integer:: i,j
-	real(KIND = DP)  :: DeltaT,Tref,Hx,Hy,dt,CONTERo,Po,Muo,D_hidraulic
+	real(KIND = DP)  :: DeltaT,Tref,Hx,Hy,dt,CONTERo,Po,Muo,D_hidraulic,U_bg
 
 	Tref=(Th+Tc)/2.0D+00
 	DeltaT=Th-Tc
 !	RHOo=Po/(R*Tref);
-	RHOo=1.0D+0
+	RHOo=1.1774D+0
 	Cpo = 1006D+0
 	contero=0.02617D+0
-	Muo=RHOo/Ra
+	Muo=1.847D-5
 
 !	Muo= 1.68D-5*( (Tref/273.0D+0)**(3.0D+0/2.0D+0) )*( 383.5D+0/(Tref+110.5) ) !SUTHERLAND's Law
 !	CONTERo=Muo*401.8D+0/2.84D-1
@@ -34,16 +34,18 @@ subroutine dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo)
 	if (Boussinesq.eq.1) then
 !		Hx=( (Ra*CONTERo*MUo)/(BBETA*g*DeltaT*Cpo*RHOo*RHOo) )**(1.0D+00/3.0D+00)
 		!Hx=(RA*(Muo/RHOo)*(Muo/RHOo)/(PR*G*BBETA*(DeltaT)))**(1.0D+00/3.0D+00)
-		Hx=1.0D+00
+		Hx=BD+2.0D+0*BW
 	else
 		Hx=( (Ra*MUo*MUo*Tref)/(Pr*g*RHOo*RHOo*DeltaT) )**(1.0D+00/3.0D+00)
 	end if
 !write(*,*) "Hx",Hx,"RHOo",RHOo,"Cpo",Cpo,"contero",contero,"Muo",Muo
 !stop
-	Hy=0.75*Hx !aspect ratio
+	Hy=B1+ABD
 !	dt=dt_adim*Hx*Hx*RHOo*Cpo/(CONTERo)
 !	write(*,*) dt
 !	stop
+
+	U_bg = V10*cos(4D+00*atan(1D+00)/180D+00*(90D+00-zeta))-U10*cos(4D+00*atan(1D+00)/180D+00*zeta)	
 
     return
 end subroutine dependent_var
@@ -306,7 +308,7 @@ subroutine start (U,V,P,T,C,Tref,rho,Fep,Fnp,TK,e)
 		Do i=1,Nx
 
 !			C(i,j)=x(i)*y(j)*Tref
-			C(i,j)=Tref
+			C(i,j)=0.5D+00
 		end do
 	end do
 
@@ -384,6 +386,7 @@ subroutine update_V (Vx,V)
     return
 end subroutine update_V
 !					update_V (Ux,U)						!
+!Is it correct?
 subroutine update_P (Ux,U)	
 
 	implicit none
@@ -605,7 +608,7 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 		ap(i,1)=1.0D+00
 		an(i,1)=0.0D+00
 		as(i,1)=0.0D+00
-		b(i,1) =3.0D+02
+		b(i,1) =Th
 	end do
    
 !					NORTH					!
@@ -615,7 +618,7 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 		ap(i,Ny)=1.0D+00
 		an(i,Ny)=0.0D+00
 		as(i,Ny)=0.0D+00!0.0D+00
-		b(i,Ny) =288.0D+0 !T_coflow
+		b(i,Ny) =Tc !T_coflow
 	end do
  
 !					WEST					!
@@ -625,7 +628,7 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 		ap(1,j)=1.0D+00
 		an(1,j)=0.0D+00
 		as(1,j)=0.0D+00
-		b(1,j) =300.0D+00
+		b(1,j) =Th
 	end do
 
 !if (street_canyon) then
@@ -633,14 +636,14 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 
 	!				WEST					!
 		Do j=1,Ny
-			outside_canyon = Y(j).gt.(0.5*Hy)
+			outside_canyon = Y(j).gt.B1
 			if (outside_canyon) then
 			ae(1,j)		=	0.0D+00
 			aw(1,j)		=	0.0D+00
 			ap(1,j)	=	1.0D+00
 			an(1,j)		=	0.0D+00
 			as(1,j)		=	0.0D+00
-			b(1,j)		=       288.0D+00
+			b(1,j)		=       Tc
 			end if  	
 		end do
 
@@ -657,7 +660,7 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 		ap(Nx,j)=1.0D+00
 		an(Nx,j)=0.0D+00
 		as(Nx,j)=0.0D+00
-		b(Nx,j) =300.0D+00
+		b(Nx,j) =Th
 	END DO
 
 !if (street_canyon) then
@@ -665,14 +668,14 @@ subroutine COEF_T(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 
 	!				EAST					!
 		Do j=2,Ny-1
-			outside_canyon = Y(j).gt.(0.3*Hy)
+			outside_canyon = Y(j).gt.B2
 			if (outside_canyon) then
 			ae(Nx,j)		=	0.0D+00
 			aw(Nx,j)		=	0.0D+00
 			ap(Nx,j)	=	1.0D+00
 			an(Nx,j)		=	0.0D+00
 			as(Nx,j)		=	0.0D+00
-			b(Nx,j)		=       288.0D+00
+			b(Nx,j)		=       Tc
 			end if  	
 		end do
 
@@ -705,7 +708,8 @@ else
 
 	do  j=2,Ny-1
 	do i=2,Nx-1
-		outside_canyon =(i.ge.(0.7*Nx-1)).and.(j.le.(0.3*Ny+1)).or.(i.le.(0.3*Nx+1)).and.(j.le.(0.5*Ny+1))
+		outside_canyon =(i.ge.(((BD+BW)/(BD+2.0D+0*BW))*Nx-1)).and.(j.le.(B2/Hy*Ny+1)).or.&
+		(i.le.(BW/(BD+2.0D+0*BW)*Nx+1)).and.(j.le.(B1/Hy*Ny+1))
 			if (outside_canyon) then
 			else
 				Resi=dabs(ap(i,j)*T(i,j)-ae(i,j)*T(i+1,j)-aw(i,j)*T(i-1,j)-as(i,j)*T(i,j-1)-an(i,j)*T(i,j+1)-b(i,j))
@@ -820,7 +824,7 @@ subroutine COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 !				DIFFUSION IN THE U-VC FACES					!
 !-----------------------------------------------------------------------------------------------!
 
-	Pr = Cpo * mu(i,j) / conter(i,j)
+	Pr = Sch
 
 
 !	 Calculo da gamma
@@ -927,8 +931,9 @@ subroutine COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 
         b(i,j)=apo(i,j)*C(i,j) + sc
 
+!How to parameterize
 	if ( (i.gt.Nx/2).and.(i.le.(Nx/2)+1).and.(j==3)) then
-		b(i,j)=b(i,j)+1.0D+01
+		b(i,j)=b(i,j)+1.0D-03
 	end if
 
 	end do
@@ -939,7 +944,7 @@ subroutine COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 !-----------------------------------------------------------------------------------------------!
 !					BOUNDARY CONDITIONS					!
 !-----------------------------------------------------------------------------------------------!
-     
+!Is it right?     
 
 !					SOUTH					!
 	Do i=1,(Nx)
@@ -958,17 +963,17 @@ subroutine COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 		ap(i,Ny)=1.0D+00
 		an(i,Ny)=0.0D+00
 		as(i,Ny)=0.0D+00!0.0D+00
-		b(i,Ny) =3.0D+02 !C_coflow
+		b(i,Ny) =C_coflow
 	end do
  
 !					WEST					!
 	Do j=1,Ny
-		ae(1,j)=1.0D+00
+		ae(1,j)=0.0D+00
 		aw(1,j)=0.0D+00
 		ap(1,j)=1.0D+00
 		an(1,j)=0.0D+00
 		as(1,j)=0.0D+00
-		b(1,j) =0.0D+00
+		b(1,j) =C_coflow
 	end do
 
 !write(*,*) b(1,:)
@@ -1012,7 +1017,8 @@ else
 
 	do  j=2,Ny-1
 	do i=2,Nx-1
-		outside_canyon =(i.ge.(0.7*Nx-1)).and.(j.le.(0.3*Ny+1)).or.(i.le.(0.3*Nx+1)).and.(j.le.(0.5*Ny+1))
+		outside_canyon =(i.ge.(((BD+BW)/(BD+2.0D+0*BW))*Nx-1)).and.(j.le.(B2/Hy*Ny+1)).or.&
+		(i.le.(BW/(BD+2.0D+0*BW)*Nx+1)).and.(j.le.(B1/Hy*Ny+1))
 			if (outside_canyon) then
 			else
 				Resi=dabs(ap(i,j)*C(i,j)-ae(i,j)*C(i+1,j)-aw(i,j)*C(i-1,j)-as(i,j)*C(i,j-1)-an(i,j)*C(i,j+1)-b(i,j))
@@ -1567,7 +1573,7 @@ end Subroutine coef_e
 Subroutine coef_U(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 			Ux,Vx,Px,					&
 			du,ae,aw,as,an,b,RES_U,Rmax_U,mu,apu,dt,RHO,	&
-			TxxL, TyyL, TxyL, Fep, Fnp, MUt, TxxT, TyyT, TxyT,APUNB)	     
+			TxxL, TyyL, TxyL, Fep, Fnp, MUt, TxxT, TyyT, TxyT,APUNB,U_bg)	     
 
 	implicit none
 
@@ -1585,7 +1591,8 @@ Subroutine coef_U(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 			    MUL_p,MUT_P,			&
 			    MUL_J1,MUL_J_1,MUT_J1,MUT_J_1, 	&
 			    GIE,GIW,GIN,GIS,			&
-				D1P,D2N,D3S,F1	,MU_n,MU_s,sp_hos,sc_hos,Sdc					
+				D1P,D2N,D3S,F1	,MU_n,MU_s,sp_hos,sc_hos,Sdc, &
+				U_bg					
 
 	real(KIND = DP), dimension(Nx) :: 		&
 		DXP,DXU,X,XU
@@ -1817,14 +1824,14 @@ Subroutine coef_U(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 
 	!				WEST					!
 		Do j=2,Ny-1
-			outside_canyon = Y(j).gt.(0.5*Hy)
+			outside_canyon = Y(j).gt.B1
 			if (outside_canyon) then
 			ae(1,j)		=	0.0D+00
 			aw(1,j)		=	0.0D+00
 			apu(1,j)	=	1.0D+00
 			an(1,j)		=	0.0D+00
 			as(1,j)		=	0.0D+00
-			b(1,j)		=       U_bg*(1 -  ( (Hy - Y(j))/ (0.5*Hy)	)**2)
+			b(1,j)		=       U_bg*(1 - ( (Hy - Y(j))/ B1 )**2)
 			end if  	
 		end do
 
@@ -1889,7 +1896,8 @@ else
 
 	do j=2,Ny-1
 	do i=2,Nx-2
-		outside_canyon =(i.ge.(0.7*Nx-1)).and.(j.le.(0.3*Ny+1)).or.(i.le.(0.3*Nx)).and.(j.le.(0.5*Ny+1))
+		outside_canyon =(i.ge.(((BD+BW)/(BD+2.0D+0*BW))*Nx-1)).and.(j.le.(B2/Hy*Ny+1)).or.&
+		(i.le.(BW/(BD+2.0D+0*BW)*Nx+1)).and.(j.le.(B1/Hy*Ny+1))
 			if (outside_canyon) then
 			else
 				Resi=dabs(apu(i,j)*Ux(i,j)-ae(i,j)*Ux(i+1,j)-aw(i,j)*Ux(i-1,j)-as(i,j)*Ux(i,j-1)-an(i,j)*Ux(i,j+1)-b(i,j))
@@ -2236,7 +2244,8 @@ else
 
 	do j=2,Ny-2
 	do i=2,Nx-1
-		outside_canyon =(i.ge.(0.7*Nx-1)).and.(j.lt.(0.3*Ny)).or.(i.le.(0.3*Nx+1)).and.(j.lt.(0.5*Ny))
+		outside_canyon =(i.ge.(((BD+BW)/(BD+2.0D+0*BW))*Nx-1)).and.(j.le.(B2/Hy*Ny+1)).or.&
+		(i.le.(BW/(BD+2.0D+0*BW)*Nx+1)).and.(j.le.(B1/Hy*Ny+1))
 			if (outside_canyon) then
 			else
 				Resi=apv(i,j)*Vx(i,j)-ae(i,j)*Vx(i+1,j)-aw(i,j)*Vx(i-1,j)-as(i,j)*Vx(i,j-1)-an(i,j)*Vx(i,j+1)-b(i,j)
@@ -2343,8 +2352,8 @@ Subroutine COEF_P(DXP,DYP,Ux,Vx,du,dv,ap,ae,aw,as,an,b,RES_P,Rmax_P,RHO,apu,apv,
 			b(i,j)=RHOw*DYP(j)*Ux(i-1,j) 		&
 			      -RHOe*DYP(j)*Ux(i,j)  		&
 			      +RHOs*DXP(i)*Vx(i,j-1)   		&
-			      -RHOn*DXP(i)*Vx(i,j)             &
-			      +(RHO(i,j)-RHO(i,j) )*DXP(i)*DYP(j)/dt	  
+			      -RHOn*DXP(i)*Vx(i,j)             
+			      !+(RHO(i,j)-RHO(i,j) )*DXP(i)*DYP(j)/dt	  
 
 
 		end do
@@ -2461,7 +2470,8 @@ else
 
 		do j=2,Ny-1
 			do i=2,Nx-1
-				outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+				outside_canyon =(i.ge.(((BD+BW)/(BD+2.0D+0*BW))*Nx-1)).and.(j.le.(B2/Hy*Ny+1)).or.&
+		(i.le.(BW/(BD+2.0D+0*BW)*Nx+1)).and.(j.le.(B1/Hy*Ny+1))
 					if (outside_canyon) then
 					else
 						summ=summ+DABS(b(i,j))
@@ -2669,7 +2679,8 @@ Subroutine PROPERTIES(Mu,CONTER,CP,CONTERo,T,Muo,CPo,RHO,Po,Pmed,Hx,Hy,DXP,DYP,T
 			end if
 
 			if (street_canyon) then
-				outside_canyon =(i.gt.(0.7*Nx)).and.(j.le.(0.3*Ny)).or.(i.lt.(0.3*Nx)).and.(j.le.(0.5*Ny))
+				outside_canyon =(i.ge.(((BD+BW)/(BD+2.0D+0*BW))*Nx)).and.(j.le.(B2/Hy*Ny)).or.&
+		(i.le.(BW/(BD+2.0D+0*BW)*Nx)).and.(j.le.(B1/Hy*Ny))
 				if (outside_canyon) Mu(i,j)=1.0D+12
 				if (outside_canyon) CONTER(i,j)=1.0D+20
 			end if

@@ -25,7 +25,7 @@ program CONDIRA
 	call CPU_TIME(Time_start)
 
 
-	call dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo)			! Compute dependent variables
+	call dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo,U_bg)			! Compute dependent variables
 	!call GRID_half_jet(DXP,DYP,DXU,DYV,X,Y,XU,YV)					! Grid generation
 	call GRID2d (DXP,DYP,DXU,DYV,X,Y,XU,YV,Hx,Hy)
 	call start(U,V,P,T,C,Tref,rho,Fep,Fnp,TKx,e)						! Initaial values for U,V and P
@@ -55,7 +55,7 @@ program CONDIRA
 	    call coef_U(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 			Ux,Vx,Px,							&
 			du,ae,aw,as,an,b,RES_U,Rmax_U,mu,apu,dt,RHO,			&
-			TxxL, TyyL, TxyL, Fep, Fnp, MUt, TxxT, TyyT, TxyT,APUNB)
+			TxxL, TyyL, TxyL, Fep, Fnp, MUt, TxxT, TyyT, TxyT,APUNB,U_bg)
 
 		call LBL_adi(1,1,(Nx-1),Ny,apu,ae,aw,an,as,b,Ux,npas_U,RELAXU)
 !		call LBL_x(1,1,(Nx-1),Ny,apu,ae,aw,an,as,b,Ux,npas_U,RELAXU)

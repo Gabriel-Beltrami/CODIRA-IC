@@ -53,17 +53,26 @@ module user
 !					THERMOPHYSICAL PROPERTIES				!
 !-----------------------------------------------------------------------------------------------!
 
-		Ra=100,			  & ! Rayleigh Number
+		Ra=1.0D+07,			  & ! Rayleigh Number
 		Bbeta=3.322D-03,		  & ! Expansion Coefficient for the Boussinesq Approximation
-		Pr=0.71D+0,			  & ! Prantl Number
-		Th=300D+00,			  & ! Hot Temperature
-		Tc=300D+00,			  & ! Cold Temperature
+		Pr=0.71D+00,			  & ! Prantl Number
+		Sch=0.75D+00,			  & ! Schmidt Number
+		Th=291.0922D+00,		  & ! Skin Temperature
+		Tc=292.0759D+00,		  & ! Air Temperature
 		G=9.8D+00,			  & ! Gravity
 		R=287.0D+00,			  & ! Gas Constant for Air
-		Po=101325.0D+00,		  & ! Initial Pressure			
+		Po=101325.0D+00,		  & ! Initial Pressure
+		B1=26.916D+00,			  & ! Highest Building Height
+		B2=25.782D+00,		  	  & ! Lowest Building Height
+		BW=10.0D+00,			  & ! Building Width
+		ABD=10.0D+00,			  & ! Above Building Distance
+		BD=20.51D+00,			  & ! Distance between buildings
+		U10=0.05005557D+00,		  & ! Horizontal Speed from Upper View* 
+		V10=-1.083871D+00,		  & ! Vertical Speed from Upper View*
+		zeta=44.73361D+00,		  & ! Street Angle with Respect to the Meridian
 
 		
-		C_coflow= 800d0, &
+		C_coflow= 5.534568D-10, &
 		CONTERo,							& ! Thermal conductivity
 		MUo,ratio_mu,ratio_conter,			& ! Viscoity
 		RHOo,								& ! Density
@@ -82,7 +91,7 @@ module user
 
  		logical :: street_canyon =.TRUE., outside_canyon
 
-	        real(KIND = DP)  :: U_bg = 1.0D+00	
+	        real(KIND = DP)  :: U_bg ! Background Velocity
 !-----------------------------------------------------------------------------------------------!
 !					SOLVER OPTIONS						!
 !-----------------------------------------------------------------------------------------------!
@@ -90,16 +99,16 @@ module user
 	integer::					&
 !		itermax_t=15000,			& ! Maximum number of iterations
 
-		itermax=50000,			& ! Maximum number of iterations
+		itermax=500000,			& ! Maximum number of iterations
 		iter,iter_t,i,j,		&
 
-		npas_P=10,			& ! Time to apply the P-solver subroutine per iteration 
+		npas_P=15,			& ! Time to apply the P-solver subroutine per iteration 
 		npas_U=1,			& ! Time to apply the U-solver subroutine per iteration 
 		npas_V=1,			& ! Time to apply the V-solver subroutine per iteration
 		npas_T=1,			& ! Time to apply the T-solver subroutine per iteration
 		npas_C=1,			& ! Time to apply the C-solver subroutine per iteration
 
-		n=3,				& ! Interpolation scheme: 1:Central, 2:Upwind, 3:Hybrid, 4:Power law, 5:Exponential
+		n=4,				& ! Interpolation scheme: 1:Central, 2:Upwind, 3:Hybrid, 4:Power law, 5:Exponential
 
 
 		n_high_order_scheme = 0 	! No HOS: 		n_high_order_scheme = 0	
