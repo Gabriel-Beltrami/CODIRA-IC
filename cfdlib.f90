@@ -1787,7 +1787,7 @@ Subroutine coef_U(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 !					BOUNDARY CONDITIONS					!
 !-----------------------------------------------------------------------------------------------!
      
-
+!Is it right?
 !					SOUTH					!
 	Do i=1,(Nx-1)
 		ae(i,1)		=	0.0D+00
@@ -2154,7 +2154,7 @@ Subroutine COEF_V(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 !					BOUNDARY CONDITIONS					!
 !-----------------------------------------------------------------------------------------------!
      
-
+!Is it right?
 !C	Frontera sur
 	Do  i=1,Nx
 		ae(i,1)		=	0.0D+00
@@ -2394,7 +2394,7 @@ Subroutine COEF_P(DXP,DYP,Ux,Vx,du,dv,ap,ae,aw,as,an,b,RES_P,Rmax_P,RHO,apu,apv,
 !-----------------------------------------------------------------------------------------------!
 !					BOUNDARY CONDITIONS					!
 !-----------------------------------------------------------------------------------------------!    
-
+!Is it right?	
 !	Frontera sur
 	Do  i=1,Nx
 

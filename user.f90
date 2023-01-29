@@ -57,8 +57,8 @@ module user
 		Bbeta=3.322D-03,		  & ! Expansion Coefficient for the Boussinesq Approximation
 		Pr=0.71D+00,			  & ! Prantl Number
 		Sch=0.75D+00,			  & ! Schmidt Number
-		Th=291.0922D+00,		  & ! Skin Temperature
-		Tc=292.0759D+00,		  & ! Air Temperature
+		Th=292.8048D+00,		  & ! Skin Temperature
+		Tc=293.4977D+00,		  & ! Air Temperature
 		G=9.8D+00,			  & ! Gravity
 		R=287.0D+00,			  & ! Gas Constant for Air
 		Po=101325.0D+00,		  & ! Initial Pressure
@@ -67,12 +67,12 @@ module user
 		BW=10.0D+00,			  & ! Building Width
 		ABD=10.0D+00,			  & ! Above Building Distance
 		BD=20.51D+00,			  & ! Distance between buildings
-		U10=0.05005557D+00,		  & ! Horizontal Speed from Upper View* 
-		V10=-1.083871D+00,		  & ! Vertical Speed from Upper View*
-		zeta=44.73361D+00,		  & ! Street Angle with Respect to the Meridian
+		U10=0.4819989D+00,		  & ! Horizontal Speed from Upper View* 
+		V10=-1.948889D+00,		  & ! Vertical Speed from Upper View*
+		zeta=43.50194D+00,		  & ! Street Angle with Respect to the Meridian
 
 		
-		C_coflow= 5.534568D-10, &
+		C_coflow= 1.903097D-09, &
 		CONTERo,							& ! Thermal conductivity
 		MUo,ratio_mu,ratio_conter,			& ! Viscoity
 		RHOo,								& ! Density
@@ -99,7 +99,7 @@ module user
 	integer::					&
 !		itermax_t=15000,			& ! Maximum number of iterations
 
-		itermax=500000,			& ! Maximum number of iterations
+		itermax=50000,			& ! Maximum number of iterations
 		iter,iter_t,i,j,		&
 
 		npas_P=15,			& ! Time to apply the P-solver subroutine per iteration 
