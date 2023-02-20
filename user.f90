@@ -8,8 +8,8 @@ module user
 !-----------------------------------------------------------------------------------------------!
 !					GRID AND DOMAIN SIZE					!
 !-----------------------------------------------------------------------------------------------!
-		Nx=81,				& ! Nodes in the x-direction
-		Ny=81,				& ! Nodes in the y-directionc
+		Nx=101,				& ! Nodes in the x-direction
+		Ny=101,				& ! Nodes in the y-directionc
 		!Ny=69 to have Ly=12h and Ny 91 to have Ly=18h
 
 		ALGORITMO=2	!**    (ALGORITMO = SIMPLE (1), SIMPLEC (2))
@@ -17,8 +17,8 @@ module user
 	real(KIND = DP)  ::			&
 
 		Hx,Hy,					& ! Domain size
-		Factorx=1.0D0,		& ! x-Screcth grid factor
-		Factory=1.0D0,		& ! y-Screcth grid factor
+		Factorx=1.0D-30,		& ! x-Screcth grid factor
+		Factory=1.0D-30,		& ! y-Screcth grid factor
 !-----------------------------------------------------------------------------------------------!
 !					NUMERICAL PARAMETERS					!
 !-----------------------------------------------------------------------------------------------!
@@ -33,8 +33,8 @@ module user
 		relaxU=0.8D+00,			& ! Relax factor for U
 		relaxV=0.8D+00,			& ! Relax factor for V
 		relaxP=1.0D+00,			& ! Relax factor for P
-		relaxT=0.7D+00,			& ! Relax factor for T
-		relaxC=0.7D+00,			& ! Relax factor for C
+		relaxT=0.8D+00,			& ! Relax factor for T
+		relaxC=0.8D+00,			& ! Relax factor for C
 		relaxTK=0.8D+00,		& ! Relax factor for TK
 		relaxe=0.8D+00,			& ! Relax factor for e
 
@@ -57,8 +57,8 @@ module user
 		Bbeta=3.322D-03,		  & ! Expansion Coefficient for the Boussinesq Approximation
 		Pr=0.71D+00,			  & ! Prantl Number
 		Sch=0.75D+00,			  & ! Schmidt Number
-		Th=292.8048D+00,		  & ! Skin Temperature
-		Tc=293.4977D+00,		  & ! Air Temperature
+		Th=297.183D+00,		  & ! Skin Temperature
+		Tc=296.5054D+00,		  & ! Air Temperature
 		G=9.8D+00,			  & ! Gravity
 		R=287.0D+00,			  & ! Gas Constant for Air
 		Po=101325.0D+00,		  & ! Initial Pressure
@@ -67,12 +67,12 @@ module user
 		BW=10.0D+00,			  & ! Building Width
 		ABD=10.0D+00,			  & ! Above Building Distance
 		BD=20.51D+00,			  & ! Distance between buildings
-		U10=0.4819989D+00,		  & ! Horizontal Speed from Upper View* 
-		V10=-1.948889D+00,		  & ! Vertical Speed from Upper View*
-		zeta=43.50194D+00,		  & ! Street Angle with Respect to the Meridian
+		U10=-2.449566D+00,		  & ! Horizontal Speed from Upper View* 
+		V10=-1.865905D+00,		  & ! Vertical Speed from Upper View*
+		zeta=45.00D+00,		  & ! Street Angle with Respect to the Meridian
 
 		
-		C_coflow= 1.903097D-09, &
+		C_coflow= 4.038323e-10, &
 		CONTERo,							& ! Thermal conductivity
 		MUo,ratio_mu,ratio_conter,			& ! Viscoity
 		RHOo,								& ! Density
@@ -99,7 +99,7 @@ module user
 	integer::					&
 !		itermax_t=15000,			& ! Maximum number of iterations
 
-		itermax=50000,			& ! Maximum number of iterations
+		itermax=100000,			& ! Maximum number of iterations
 		iter,iter_t,i,j,		&
 
 		npas_P=15,			& ! Time to apply the P-solver subroutine per iteration 
