@@ -300,7 +300,7 @@ subroutine start (U,V,P,T,C,Tref,rho,Fep,Fnp,TK,e)
 		Do i=1,Nx
 
 !			T(i,j)=x(i)*y(j)*Tref
-			T(i,j)=Th
+			T(i,j)=Th !Th
 		end do
 	end do
 
@@ -933,7 +933,7 @@ subroutine COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 
 !How to parameterize
 	if ( (i.gt.Nx/2).and.(i.le.(Nx/2)+1).and.(j==3)) then
-		b(i,j)=b(i,j)+1.0D-03
+		b(i,j)=b(i,j)+1.0D-09
 	end if
 
 	end do
