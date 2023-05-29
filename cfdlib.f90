@@ -1808,6 +1808,7 @@ Subroutine coef_U(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 		b(i,Ny)		=	0.0D+00!u_coflow
 	end do
 	
+if (U_bg .gt. 0.0D+00) then
 
 !					WEST					!
 	Do j=2,Ny-1
@@ -1849,8 +1850,48 @@ Subroutine coef_U(DXP,DYP,DXU,DYV,X,Y,XU,YV,				&
 		b (Nx-1,j)	=	0.0D+00
 	END DO
 
+else
+
+!					WEST					!
+	Do j=2,Ny-1
+		ae(1,j)		=	1.0D+00
+		aw(1,j)		=	0.0D+00
+		apu(1,j)	=	1.0D+00
+		an(1,j)		=	0.0D+00
+		as(1,j)		=	0.0D+00
+		b(1,j)		= 	0.0D+00
+	end do
+
+!					EAST					!
+	Do j=2,Ny-1
+		ae(Nx-1,j)	=	0.0D+00
+		aw(Nx-1,j)	=	0.0D+00
+		apu(Nx-1,j)	=	1.0D+00
+		an(Nx-1,j)	=	0.0D+00
+		as(Nx-1,j)	=	0.0D+00
+		b (Nx-1,j)	=	0.0D+00
+	END DO
+
+!if (street_canyon) then
+	if (.TRUE.) then
+
+	!				EAST					!
+		Do j=2,Ny-1
+			outside_canyon = Y(j).gt.B2
+			if (outside_canyon) then
+			ae(Nx-1,j)		=	0.0D+00
+			aw(Nx-1,j)		=	0.0D+00
+			apu(Nx-1,j)	=	1.0D+00
+			an(Nx-1,j)		=	0.0D+00
+			as(Nx-1,j)		=	0.0D+00
+			b(Nx-1,j)		=       U_bg
+			end if  	
+		end do
 
 
+	end if
+
+end if
 
 !-----------------------------------------------------------------------------------------------!
 !!			d's Matrix determination for SIMPLE algorithm										!
