@@ -50,12 +50,13 @@ end subroutine literatura_compare
 !-----------------------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------------------------------!
 
-subroutine write_vtk(U,V,P,T,C,b,iter_t,TK,e,MuT)
+subroutine write_vtk(U,V,P,T,C,b,iter_t,zed,TK,e,MuT,Sch_ma,Th_ma,U_ma,emiss_ma,C_ma)
 
 	implicit none
 
 	character(len = 27) :: str, tmp
-	integer :: i,j,iter_t
+	integer :: i,j,iter_t, zed
+	real(KIND = DP) :: Sch_ma, Th_ma, U_ma, emiss_ma, C_ma
 	real(KIND = DP), dimension(Nx+1) :: x_print
 	real(KIND = DP), dimension(Ny+1) :: Y_print
 	real(KIND = DP), dimension(Nx,Ny) :: U,V,P,T,C,b,PSIP,TK,e,inter_U,inter_V,MuT,	&
@@ -76,7 +77,7 @@ subroutine write_vtk(U,V,P,T,C,b,iter_t,TK,e,MuT)
 	y_print(2)=yv(1)+1.0D-5
 
 
-	write (tmp,'(I5.5)') case_jet
+	write (tmp,'(I5.5)') zed
 	str = 'outputdata/output_'//trim(tmp)//'.vtk'
 	open(unit=1, file = str)
 
@@ -191,6 +192,7 @@ subroutine write_vtk(U,V,P,T,C,b,iter_t,TK,e,MuT)
 		end do
 	end do
 
+ write(1, "(f22.14, f22.14)") Sch_ma, Th_ma, U_ma, emiss_ma, C_ma
 
 	close(1)
 
@@ -580,171 +582,195 @@ end subroutine energy_budget
 !-----------------------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------------------------------!
 
-subroutine write_matlab()
+subroutine write_matlab(zed,iter,iter_t,Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Res_C,Rmax_T,Rmax_C,	&
+					Res_Tk,Rmax_Tk,Res_e,Rmax_e)
 
 	implicit none
 
-	integer :: i,j
+	integer :: i,j,zed,iter,iter_t
 	real(KIND = DP), dimension(Nx,Ny) :: PSIP,inter_U,inter_V,inter_txyt,Pk,epsi,div_T,DTK_Dt,vorticity_z,ETT
 	character(len=8) :: case_jet_string
+	real(KIND = DP) :: Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Res_C,Rmax_T,Rmax_C,Res_Tk,Rmax_Tk,Res_e,Rmax_e
 
+	!case_jet_string='diff_cav'
+	write(case_jet_string, '(I0)') zed  ! Convert integer to character string
 
-	case_jet_string="diff_cavity"
+	!open(unit=1, file ='./outputdata/matlab/x' //trim(case_jet_string)// '.dat')
+	!open(unit=2, file ='./outputdata/matlab/y' //trim(case_jet_string)// '.dat')
 
-
-	open(unit=1, file ='./outputdata/matlab/x' //trim(case_jet_string)// '.dat')
-	open(unit=2, file ='./outputdata/matlab/y' //trim(case_jet_string)// '.dat')
-
-	open(unit=33, file ='./outputdata/matlab/T' //trim(case_jet_string)// '.dat')
+	!open(unit=33, file ='./outputdata/matlab/T' //trim(case_jet_string)// '.dat')
 	open(unit=34, file ='./outputdata/matlab/C' //trim(case_jet_string)// '.dat')
+	open(unit=35, file ='./outputdata/matlab/Res' //trim(case_jet_string)// '.dat')
 
-	open(unit=4, file ='./outputdata/matlab/stream.dat')
 
-	open(unit=55, file ='./outputdata/matlab/u' //trim(case_jet_string)// '.dat')
-	open(unit=56, file ='./outputdata/matlab/u_re' //trim(case_jet_string)// '.dat')	
-	open(unit=66, file ='./outputdata/matlab/v'//trim(case_jet_string)// '.dat')
-	open(unit=67, file ='./outputdata/matlab/v_re' //trim(case_jet_string)// '.dat')	
+	!open(unit=4, file ='./outputdata/matlab/stream.dat')
 
-	open(unit=7, file ='./outputdata/matlab/TK.dat')
-	open(unit=8, file ='./outputdata/matlab/e.dat')
+	!open(unit=55, file ='./outputdata/matlab/u' //trim(case_jet_string)// '.dat')
+	!open(unit=56, file ='./outputdata/matlab/u_re' //trim(case_jet_string)// '.dat')	
+	!open(unit=66, file ='./outputdata/matlab/v'//trim(case_jet_string)// '.dat')
+	!open(unit=67, file ='./outputdata/matlab/v_re' //trim(case_jet_string)// '.dat')	
 
-	open(unit=10, file ='./outputdata/matlab/Ruu' //trim(case_jet_string)// '.dat')
-	open(unit=11, file ='./outputdata/matlab/Rvv' //trim(case_jet_string)// '.dat')
-	open(unit=12, file ='./outputdata/matlab/Ruv' //trim(case_jet_string)// '.dat')
+	!open(unit=7, file ='./outputdata/matlab/TK.dat')
+	!open(unit=8, file ='./outputdata/matlab/e.dat')
 
-	open(unit=13, file ='./outputdata/matlab/Pk' //trim(case_jet_string)// '.dat')
-	open(unit=14, file ='./outputdata/matlab/epsi' //trim(case_jet_string)// '.dat')
-	open(unit=15, file ='./outputdata/matlab/div_T' //trim(case_jet_string)// '.dat')
-	open(unit=16, file ='./outputdata/matlab/DTK_Dt' //trim(case_jet_string)// '.dat')
+	!open(unit=10, file ='./outputdata/matlab/Ruu' //trim(case_jet_string)// '.dat')
+	!open(unit=11, file ='./outputdata/matlab/Rvv' //trim(case_jet_string)// '.dat')
+	!open(unit=12, file ='./outputdata/matlab/Ruv' //trim(case_jet_string)// '.dat')
+
+	!open(unit=13, file ='./outputdata/matlab/Pk' //trim(case_jet_string)// '.dat')
+	!open(unit=14, file ='./outputdata/matlab/epsi' //trim(case_jet_string)// '.dat')
+	!open(unit=15, file ='./outputdata/matlab/div_T' //trim(case_jet_string)// '.dat')
+	!open(unit=16, file ='./outputdata/matlab/DTK_Dt' //trim(case_jet_string)// '.dat')
 
 !	open(unit=17, file ='./outputdata/matlab/vorticity_z.dat')
 
-	open(unit=18, file ='./outputdata/matlab/rho' //trim(case_jet_string)// '.dat')
-	open(unit=19, file ='./outputdata/matlab/Energy_TT' //trim(case_jet_string)// '.dat')
-	open(unit=88, file ='./outputdata/matlab/pressure' //trim(case_jet_string)// '.dat')
+	!open(unit=18, file ='./outputdata/matlab/rho' //trim(case_jet_string)// '.dat')
+	!open(unit=19, file ='./outputdata/matlab/Energy_TT' //trim(case_jet_string)// '.dat')
+	!open(unit=88, file ='./outputdata/matlab/pressure' //trim(case_jet_string)// '.dat')
 
-	open(unit=99, file ='./outputdata/matlab/ite_coupling' //trim(case_jet_string)// '.dat',STATUS='REPLACE')
-	write(99,*) ite_coupling
-	close(99)
+	!open(unit=99, file ='./outputdata/matlab/ite_coupling' //trim(case_jet_string)// '.dat',STATUS='REPLACE')
+	!write(99,*) ite_coupling
+	!close(99)
 
-    CALL STREAMLINES(DYP,U,PSIP,RHO)
-	CALL interpol_UV(U,V,inter_U,inter_V)
-	CALL interpol_txyt(inter_txyt)
-	CALL energy_budget(Pk,epsi,div_T,DTK_Dt,vorticity_z)
-	CALL Energy_transport(ETT)	
+    !CALL STREAMLINES(DYP,U,PSIP,RHO)
+	!CALL interpol_UV(U,V,inter_U,inter_V)
+	!CALL interpol_txyt(inter_txyt)
+	!CALL energy_budget(Pk,epsi,div_T,DTK_Dt,vorticity_z)
+	!CALL Energy_transport(ETT)	
 
 
-	do i=1,Nx
-		write(1,*) X(i)
-	end do
+	!do i=1,Nx
+	!	write(1,*) X(i)
+	!end do
 
-	do j=1,Ny
-		write(2,*) y(j)
-	end do
+	!do j=1,Ny
+	!	write(2,*) y(j)
+	!end do
 
-	do i=1,Nx
-		write(33,*) T(i,:)
-	end do
+	!do i=1,Nx
+	!	write(33,*) T(i,:)
+	!end do
 
 	do i=1,Nx
 		write(34,*) C(i,:)
 	end do
 
-	do i=1,Nx
-		write(4,*) PSIP(i,:)
-	end do
+!	write(*,*) 'Iteracao no tempo:',iter_t
+	write(35,*) "______________________________________________"
+	write(35,*) 'Iteracao no SIMPLE:',iter	
+	write(35,*)
+	write(35,*) 'Global error of U:',Res_U,"  |  ",'MAX local error of U:',Rmax_U
+	write(35,*) "-----------------------------------------------"	
+	write(35,*) 'Global error of V:',Res_V,"  |  ",'MAX local error of V:',Rmax_V
+	write(35,*) "-----------------------------------------------"
+	write(35,*) 'Global error of P:',Res_P,"  |  ",'MAX local error of P:',Rmax_P
+	write(35,*) "-----------------------------------------------"
+	write(35,*) 'Global error of T:',Res_T,"  |  ",'MAX local error of T:',Rmax_T
+	write(35,*) "-----------------------------------------------"
+	write(35,*) 'Global error of C:',Res_C,"  |  ",'MAX local error of C:',Rmax_C
+	write(35,*) "-----------------------------------------------"
+	write(35,*) 'Global error of TK:',Res_TK,"  |  ",'MAX local error of TK:',Rmax_TK
+	write(35,*) "-----------------------------------------------"
+	write(35,*) 'Global error of e:',Res_e,"  |  ",'MAX local error of e:',Rmax_e	
+	write(35,*) "-----------------------------------------------"
+	write(35,*) 'Maximum Turvulent viscosity:',maxval(maxval(Mut,2))
 
-	do i=1,Nx
-		write(55,*) inter_U(i,:)
-	end do
+	!do i=1,Nx
+	!	write(4,*) PSIP(i,:)
+	!end do
 
-	do i=1,Nx
-		write(56,*) U(i,:)
-	end do
+	!do i=1,Nx
+	!	write(55,*) inter_U(i,:)
+	!end do
 
-	do i=1,Nx
-		write(66,*) inter_V(i,:)
-	end do
+	!do i=1,Nx
+	!	write(56,*) U(i,:)
+	!end do
 
-	do i=1,Nx
-		write(67,*) V(i,:)
-	end do
+	!do i=1,Nx
+	!	write(66,*) inter_V(i,:)
+	!end do
+
+	!do i=1,Nx
+	!	write(67,*) V(i,:)
+	!end do
 
 
-	do i=1,Nx
-		write(7,*) TK(i,:)
-	end do
+	!do i=1,Nx
+	!	write(7,*) TK(i,:)
+	!end do
 
-	do i=1,Nx
-		write(8,*) e(i,:)
-	end do
+	!do i=1,Nx
+	!	write(8,*) e(i,:)
+	!end do
 
-	do i=1,Nx
-		write(10,*) Txxt(i,:)/RHO(i,:)
-	end do
+	!do i=1,Nx
+	!	write(10,*) Txxt(i,:)/RHO(i,:)
+	!end do
 
-	do i=1,Nx
-		write(11,*) Tyyt(i,:)/RHO(i,:)
-	end do
+	!do i=1,Nx
+	!	write(11,*) Tyyt(i,:)/RHO(i,:)
+	!end do
 
-	do i=1,Nx
-		write(12,*) inter_txyt(i,:)/RHO(i,:)
-	end do
+	!do i=1,Nx
+	!	write(12,*) inter_txyt(i,:)/RHO(i,:)
+	!end do
 
-	do i=1,Nx
-		write(13,*) Pk(i,:)
-	end do
+	!do i=1,Nx
+	!	write(13,*) Pk(i,:)
+	!end do
 
-	do i=1,Nx
-		write(14,*) epsi(i,:)
-	end do
+	!do i=1,Nx
+	!	write(14,*) epsi(i,:)
+	!end do
 
-	do i=1,Nx
-		write(15,*) div_T(i,:)
-	end do
+	!do i=1,Nx
+	!	write(15,*) div_T(i,:)
+	!end do
 
-	do i=1,Nx
-		write(16,*) DTK_Dt(i,:)
-	end do
+	!do i=1,Nx
+	!	write(16,*) DTK_Dt(i,:)
+	!end do
 
-	do i=1,Nx
-		write(17,*) vorticity_z(i,:)
-	end do
+	!do i=1,Nx
+	!	write(17,*) vorticity_z(i,:)
+	!end do
 
-	do i=1,Nx
-		write(18,*) rho(i,:)
-	end do
+	!do i=1,Nx
+	!	write(18,*) rho(i,:)
+	!end do
 
-	do i=1,Nx
-		write(88,*) P(i,:)
-	end do
+	!do i=1,Nx
+	!	write(88,*) P(i,:)
+	!end do
 
-	do i=1,Nx
-		write(19,*) ETT(i,:)
-	end do
+	!do i=1,Nx
+	!	write(19,*) ETT(i,:)
+	!end do
 
-	close(1)
-    close(2)
-	close(33)
+	!close(1)
+    !close(2)
+	!close(33)
 	close(34)
-    close(4)
-    close(55)
-    close(56)    
-    close(66)
-    close(67)
-    close(7)
-	close(8)
-    close(10)
-	close(11)
-    close(12)
-    close(13)
-    close(14)
-	close(15)
-    close(16) 
-    close(17)   
-    close(18)
-    close(88) 
-    close(19)
+	close(35)
+    !close(4)
+    !close(55)
+    !close(56)    
+    !close(66)
+    !close(67)
+    !close(7)
+	!close(8)
+    !close(10)
+	!close(11)
+    !close(12)
+    !close(13)
+    !close(14)
+	!close(15)
+    !close(16) 
+    !close(17)   
+    !close(18)
+    !close(88) 
+    !close(19)
 end subroutine write_matlab
 
 !-----------------------------------------------------------------------------------------------!

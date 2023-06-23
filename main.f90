@@ -18,18 +18,77 @@ program CONDIRA
 	use user
 	use grids
 	use cfdlib
-	use visual 
+	use visual
+	use mpi 
 
 	implicit none
 
+	real(kind = dp) :: Sch_ma, Th_ma, U_ma, emiss_ma, C_ma
+	integer :: rank, ierr, np, zed
+
+
+
+
+	real, dimension(:), allocatable :: Sch_par, Th_par, U_par, emiss_par, C_par
+	integer :: len_Sch, len_Th, len_U, len_emiss, len_C
+
 	call CPU_TIME(Time_start)
 
+	open(unit = 99, file = "SamplesSch.txt", status = 'old', action = 'read')
+	read(99,*) len_Sch
+	allocate(Sch_par(len_Sch))
+	do i = 1, len_Sch
+		read(99,*) Sch_par(i)
+		end do
 
-	call dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo,U_bg)			! Compute dependent variables
+	open(unit = 98, file = "SamplesSkinTemp.txt", status = 'old', action = 'read')
+	read(98,*) len_Th
+	allocate(Th_par(len_Th))
+	do i = 1, len_Th
+		read(98,*) Th_par(i)
+	end do
+
+		open(unit = 97, file = "SamplesWdSpd.txt", status = 'old', action = 'read')
+	read(97,*) len_U
+	allocate(U_par(len_U))
+	do i = 1, len_U
+		read(97,*) U_par(i)
+	end do
+
+		open(unit = 96, file = "SamplesEmiss.txt", status = 'old', action = 'read')
+	read(96,*) len_emiss
+	allocate(emiss_par(len_emiss))
+	do i = 1, len_emiss
+		read(96,*) emiss_par(i)
+	end do
+	
+		open(unit = 95, file = "SamplesBackCon.txt", status = 'old', action = 'read')
+	read(95,*) len_C
+	allocate(C_par(len_C))
+	do i = 1, len_C
+		read(95,*) C_par(i)
+	end do
+
+	call mpi_init(ierr)
+	call mpi_comm_size(MPI_COMM_WORLD, np, ierr)
+	call mpi_comm_rank(MPI_COMM_WORLD, rank, ierr)
+
+	do zed = rank+1, size(Sch_par), np
+	Sch_ma = Sch_par(zed)
+	Th_ma = Th_par(zed)
+	U_ma = U_par(zed)
+	emiss_ma = emiss_par(zed)
+	C_ma = C_par(zed)
+
+	write(*,*) Sch_ma, Th_ma, U_ma, emiss_ma, C_ma, zed, rank
+
+
+
+	call dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo,U_bg,Sch_ma,Th_ma,U_ma,emiss_ma,C_ma) ! Compute dependent variables
 	!call GRID_half_jet(DXP,DYP,DXU,DYV,X,Y,XU,YV)					! Grid generation
 	call GRID2d (DXP,DYP,DXU,DYV,X,Y,XU,YV,Hx,Hy)
 	call start(U,V,P,T,C,Tref,rho,Fep,Fnp,TKx,e)						! Initaial values for U,V and P
-	call write_vtk(U,V,P,T,C,b,iter_t,TK,e,MuT)
+	call write_vtk(U,V,P,T,C,b,iter_t,zed,TK,e,MuT,Sch_ma,Th_ma,U_ma,emiss_ma,C_ma)
 
 	!--------------------------------------- SIMPLE/SIMPLEC -------------------------------------------------------!
 	do iter=1,itermax
@@ -129,8 +188,21 @@ program CONDIRA
 !--------------------------------------------- 		 END Loop 	-----------------------------------------------------!
 	call print_Residual (iter,iter_t,Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Res_C,Rmax_T,Rmax_C,	&
 				Res_Tk,Rmax_Tk,Res_e,Rmax_e)
-	call write_vtk(U,V,P,T,C,b,iter_t,TK,e,MuT)
-	call write_matlab()
+	call write_vtk(U,V,P,T,C,b,iter_t,zed,TK,e,MuT,Sch_ma,Th_ma,U_ma,emiss_ma,C_ma)
+	!call write_matlab()
+	call write_matlab(zed,iter,iter_t,Res_U,Res_V,Res_P,Rmax_U,Rmax_V,Rmax_P,Res_T,Res_C,Rmax_T,Rmax_C,	&
+					Res_Tk,Rmax_Tk,Res_e,Rmax_e)
+
+end do
+
+! Deallocate arrays
+  deallocate(Sch_par)
+  deallocate(Th_par)
+  deallocate(U_par)
+  deallocate(emiss_par)
+  deallocate(C_par)
+
+call mpi_finalize(ierr)
 
 	call CPU_TIME(Time_finish)
     write(*,*) "computational time",(time_finish-time_start)

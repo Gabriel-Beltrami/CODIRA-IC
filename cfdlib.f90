@@ -12,12 +12,18 @@ contains
 !-----------------------------------------------------------------------------------------------!
 !-----------------------------------------------------------------------------------------------!
 
-subroutine dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo,U_bg)
+subroutine dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo,U_bg,Sch_dv,Th_dv,U_dv,emiss_dv,C_dv)
 			
 
 	implicit none
 	integer:: i,j
-	real(KIND = DP)  :: DeltaT,Tref,Hx,Hy,dt,CONTERo,Po,Muo,D_hidraulic,U_bg
+	real(KIND = DP)  :: DeltaT,Tref,Hx,Hy,dt,CONTERo,Po,Muo,D_hidraulic,U_bg,Sch_dv,Th_dv,U_dv,emiss_dv,C_dv
+
+	Sch=Sch_dv
+	Th=Th_dv
+	U_bg=U_dv
+	emiss=emiss_dv
+	C_coflow=C_dv
 
 	Tref=(Th+Tc)/2.0D+00
 	DeltaT=Th-Tc
@@ -45,7 +51,7 @@ subroutine dependent_var(DeltaT,Hx,Hy,dt,Tref,CONTERo,Po,Muo,U_bg)
 !	write(*,*) dt
 !	stop
 
-	U_bg = V10*cos(4D+00*atan(1D+00)/180D+00*(90D+00-zeta))-U10*cos(4D+00*atan(1D+00)/180D+00*zeta)	
+	!U_bg = V10*cos(4D+00*atan(1D+00)/180D+00*(90D+00-zeta))-U10*cos(4D+00*atan(1D+00)/180D+00*zeta)	
 	!write(*,*) U_bg
     return
 end subroutine dependent_var
@@ -933,7 +939,7 @@ subroutine COEF_C(DXP,DYP,DXU,DYV,X,Y,XU,YV,			&
 
 !How to parameterize
 	if ( (i.gt.Nx/2).and.(i.le.(Nx/2)+1).and.(j==3)) then
-		b(i,j)=b(i,j)+1.0D-09
+		b(i,j)=b(i,j)+emiss
 	end if
 
 	end do

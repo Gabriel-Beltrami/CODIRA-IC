@@ -56,9 +56,9 @@ module user
 		Ra=1.0D+07,			  & ! Rayleigh Number
 		Bbeta=3.322D-03,		  & ! Expansion Coefficient for the Boussinesq Approximation
 		Pr=0.71D+00,			  & ! Prantl Number
-		Sch=0.75D+00,			  & ! Schmidt Number
-		Th=297.183D+00,		  & ! Skin Temperature
-		Tc=296.5054D+00,		  & ! Air Temperature
+		Sch,			  	  & ! Schmidt Number: Turbulent~0.75
+		Th,				  & ! Skin Temperature 
+		Tc=297.5836D+00,		  & ! Air Temperature
 		G=9.8D+00,			  & ! Gravity
 		R=287.0D+00,			  & ! Gas Constant for Air
 		Po=101325.0D+00,		  & ! Initial Pressure
@@ -67,12 +67,13 @@ module user
 		BW=10.0D+00,			  & ! Building Width
 		ABD=10.0D+00,			  & ! Above Building Distance
 		BD=20.51D+00,			  & ! Distance between buildings
-		U10=-2.449566D+00,		  & ! Horizontal Speed from Upper View* 
-		V10=-1.865905D+00,		  & ! Vertical Speed from Upper View*
+		U10,	  			  & ! Horizontal Speed from Upper View*: vary speed trying to adjust the results 
+		V10,	  			  & ! Vertical Speed from Upper View*: vary speed trying to adjust the results
 		zeta=45.00D+00,		  & ! Street Angle with Respect to the Meridian
+		emiss,				  & ! BC Emissions from Vehicles: Baseline Value is 1.0D-09 kg/m³
 
 		
-		C_coflow= 4.038323e-10, &
+		C_coflow, 			  & ! Try x2 and x1/2 to understand the emission influence
 		CONTERo,							& ! Thermal conductivity
 		MUo,ratio_mu,ratio_conter,			& ! Viscoity
 		RHOo,								& ! Density
@@ -99,7 +100,7 @@ module user
 	integer::					&
 !		itermax_t=15000,			& ! Maximum number of iterations
 
-		itermax=100000,			& ! Maximum number of iterations
+		itermax=1000,			& ! Maximum number of iterations, usually 50k
 		iter,iter_t,i,j,		&
 
 		npas_P=15,			& ! Time to apply the P-solver subroutine per iteration 
